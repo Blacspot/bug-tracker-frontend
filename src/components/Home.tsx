@@ -1,4 +1,3 @@
-import React from 'react'
 import Navbar from './Navbar/Navbar'
 import Herom from './Hero/Hero'
 //import Programs from './Programs/Programs'
