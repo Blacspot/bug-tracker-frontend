@@ -1,5 +1,7 @@
 import Navbar from './Navbar/Navbar'
 import Herom from './Hero/Hero'
+import { About } from './About/About'
+import { Footer } from './Footer/footer'
 //import Programs from './Programs/Programs'
 //import Title from './Title/Title'
 //import About from './About/About'
@@ -13,7 +15,8 @@ const Home = () => {
      <div>
         <Navbar/>
         <Herom />
-        
+        <About />  
+        <Footer />    
       
     
     </div>
