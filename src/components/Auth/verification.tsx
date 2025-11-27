@@ -37,7 +37,7 @@ export const Verification = () => {
             email: emailState
         }
     })
-    const onSubmit: SubmitHandler<VerifyInputs> = async (data) => {
+    const onSubmit: SubmitHandler<VerifyInputs> = async () => {
         setIsLoading(true)
         try {
             // Mock verification

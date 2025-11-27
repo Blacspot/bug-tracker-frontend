@@ -39,7 +39,8 @@ export const initialBugs: Bug[] = [
     assignedToName: 'Jane Developer',
     createdAt: new Date('2024-11-01'),
     updatedAt: new Date('2024-11-01'),
-    comments: []
+    comments: [],
+    attachments: []
   },
   {
     id: '2',
@@ -64,6 +65,7 @@ export const initialBugs: Bug[] = [
         text: 'Looking into the search algorithm. Found the issue in the indexing.',
         createdAt: new Date('2024-11-05')
       }
-    ]
+    ],
+    attachments: []
   }
 ];

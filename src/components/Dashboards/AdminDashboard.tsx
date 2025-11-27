@@ -17,7 +17,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   bugs,
   projects,
   users,
-  currentUser,
   onBugClick,
   onNewBug
 }) => {

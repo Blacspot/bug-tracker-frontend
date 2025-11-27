@@ -15,7 +15,6 @@ interface TesterDashboardProps {
 export const TesterDashboard: React.FC<TesterDashboardProps> = ({
   bugs,
   projects,
-  currentUser,
   onBugClick,
   onNewBug
 }) => {

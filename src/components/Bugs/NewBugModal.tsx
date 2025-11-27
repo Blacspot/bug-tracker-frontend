@@ -34,7 +34,6 @@ export const NewBugModal: React.FC<NewBugModalProps> = ({
   onClose,
   onSubmit,
   projects,
-  currentUser,
 }) => {
   const [attachments, setAttachments] = useState<string[]>([]);
   const {

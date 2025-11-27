@@ -15,9 +15,7 @@ interface DeveloperDashboardProps {
 export const DeveloperDashboard: React.FC<DeveloperDashboardProps> = ({
   bugs,
   projects,
-  currentUser,
   onBugClick,
-  onNewBug
 }) => {
   const stats = calculateStats(bugs);
 
