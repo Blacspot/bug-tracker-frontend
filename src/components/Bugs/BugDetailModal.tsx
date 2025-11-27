@@ -98,6 +98,23 @@ export const BugDetailModal: React.FC<BugDetailModalProps> = ({
             </pre>
           </div>
 
+          {/* Attachments */}
+          <div>
+            <h3 className="text-gray-900 mb-2">Attachments</h3>
+            {bug.attachments.length > 0 ? (
+              <ul className="space-y-2">
+                {bug.attachments.map((attachment, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-700">{attachment}</span>
+                    <button className="text-blue-600 hover:text-blue-800 text-sm">Download</button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 text-sm">No attachments</p>
+            )}
+          </div>
+
           {/* Status Update */}
           {(currentUser.role === 'Admin' || currentUser.role === 'Developer') && (
             <div>

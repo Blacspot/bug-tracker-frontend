@@ -4,6 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../store/authSlice";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 
@@ -34,11 +35,6 @@ export const Loginform = () => {
     })
   }
 
-  // Mock login success action
-  const loginSuccess = (response: { message: string; user: { role: string } }) => ({
-    type: 'LOGIN_SUCCESS',
-    payload: response
-  })
 
    const {
         register,
@@ -48,7 +44,7 @@ export const Loginform = () => {
         resolver: yupResolver(schema)
     })
 
-      const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+      const onSubmit: SubmitHandler<LoginInputs> = async () => {
         setIsLoading(true)
         try {
             const response = await loginUser()
@@ -57,11 +53,7 @@ export const Loginform = () => {
             // dispatch- store user info
             dispatch(loginSuccess(response))
 
-            if (response.user.role === 'Admin') {
-                navigate('/')
-            } else {
-                navigate('/')
-            }
+            navigate('/dashboard')
             setIsLoading(false)
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

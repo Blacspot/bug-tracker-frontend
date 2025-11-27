@@ -43,6 +43,7 @@ export interface Bug {
   createdAt: Date;
   updatedAt: Date;
   comments: Comment[];
+  attachments: string[];
 }
 
 export type ActiveView = 'dashboard' | 'bugs' | 'projects';

@@ -16,7 +16,7 @@ const Herom = () => {
               and improving QA and development workflows — all in one platform.
             </p>
             <p>Ready to get started?</p>
-            <Link to="/signup">
+            <Link to="/register">
               <button className='btn'>
                 Join Us <img src={dark_arrow} alt=""/>
               </button>

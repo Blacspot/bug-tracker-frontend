@@ -56,9 +56,9 @@ export const Register = () => {
             // console.log("Response", response);
             toast.success(response.message)
 
-            // redirect the user to home for now
+            // redirect the user to verification page
             setTimeout(() => {
-                navigate('/')
+                navigate('/verification', { state: { email: data.email } })
             }, 2000)
             setIsLoading(false)
 
