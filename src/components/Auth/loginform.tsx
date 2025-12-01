@@ -4,7 +4,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "../../store/authSlice";
+import type { AppDispatch } from "../../store";
+import { loginThunk } from "../../store/authSlice";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 
@@ -19,22 +20,9 @@ const schema = yup.object({
 });
 
 export const Loginform = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
-
-  // Mock login function
-  const loginUser = async () => {
-    return new Promise<{ message: string; user: { role: string } }>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          message: "Login successful",
-          user: { role: "Admin" }
-        })
-      }, 1000)
-    })
-  }
-
 
    const {
         register,
@@ -44,24 +32,16 @@ export const Loginform = () => {
         resolver: yupResolver(schema)
     })
 
-      const onSubmit: SubmitHandler<LoginInputs> = async () => {
+      const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
         setIsLoading(true)
         try {
-            const response = await loginUser()
-            // console.log(response);
-            toast.success(response.message)
-            // dispatch- store user info
-            dispatch(loginSuccess(response))
-
+            await dispatch(loginThunk(data)).unwrap()
+            toast.success("Login successful")
             navigate('/dashboard')
+        } catch (error) {
+            toast.error(error as string || 'Login failed')
+        } finally {
             setIsLoading(false)
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            // console.log(error.data.error);
-            toast.error(error.data?.error || 'Login failed')
-            setIsLoading(false)
-
         }
     }
 

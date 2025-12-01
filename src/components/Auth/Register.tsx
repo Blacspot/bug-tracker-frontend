@@ -5,42 +5,37 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { toast } from "sonner"
 import { useNavigate } from "react-router"
 import { useState } from "react"
+import { useDispatch } from 'react-redux'
+import { registerThunk } from '../../store/authSlice'
+import type { UserRole } from '../types'
+import type { AppDispatch } from '../../store'
 
 type RegisterInputs = {
     first_name: string
     last_name: string
     email: string
-    phone_number: string
     password: string
     confirmPassword: string
+    role: UserRole
 }
 
 const schema = yup.object({
     first_name: yup.string().max(50, 'Max 50 characters').required('First name is required'),
     last_name: yup.string().max(50, 'Max 50 characters').required('Last name is required'),
     email: yup.string().email('Invalid email').max(100, 'Max 100 characters').required('Email is required'),
-    phone_number: yup.string().max(20, 'Max 20 characters').required('Phone number is required'),
     password: yup.string().min(6, 'Min 6 characters').max(255, 'Max 255 characters').required('Password is required'),
     confirmPassword: yup.string()
         .oneOf([yup.ref('password')], "Password must match")
-        .required('Confirm password is required')
+        .required('Confirm password is required'),
+    role: yup.string().oneOf(['Admin', 'Developer', 'Tester'], 'Invalid role').required('Role is required')
 })
 
 
 export const Register = () => {
     const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(false)
+    const dispatch = useDispatch<AppDispatch>()
 
-    // Mock create user function
-    const createUser = async () => {
-        return new Promise<{ message: string }>((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    message: "Registration successful"
-                })
-            }, 1000)
-        })
-    }
     const {
         register,
         handleSubmit,
@@ -52,24 +47,19 @@ export const Register = () => {
     const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
         setIsLoading(true)
         try {
-            const response = await createUser()
-            // console.log("Response", response);
-            toast.success(response.message)
-
-            // redirect the user to verification page
-            setTimeout(() => {
-                navigate('/verification', { state: { email: data.email } })
-            }, 2000)
+            await dispatch(registerThunk({
+                username: `${data.first_name} ${data.last_name}`,
+                email: data.email,
+                password: data.password,
+                role: data.role
+            })).unwrap()
+            toast.success('Registration successful')
+            navigate('/verification', { state: { email: data.email } })
+        } catch (error) {
+            toast.error((error as string) || 'Registration failed')
+        } finally {
             setIsLoading(false)
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            // console.log("Error", error);
-            toast.error(error.data?.error || 'Registration failed')
-            setIsLoading(false)
-
         }
-
     }
 
     return (
@@ -119,18 +109,6 @@ export const Register = () => {
                             )
                         }
                         <input
-                            type="text"
-                            {...register("phone_number")}
-                            placeholder="Phone Number"
-                            className="input border border-gray-300 rounded w-full p-2 text-lg"
-
-                        />
-                        {
-                            errors.phone_number && (
-                                <span className="text-red-700 text-sm">{errors.phone_number.message}</span>
-                            )
-                        }
-                        <input
                             type="password"
                             {...register("password")}
                             placeholder="Password"
@@ -152,6 +130,20 @@ export const Register = () => {
                         {errors.confirmPassword && (
                             <span className=" text-red-700 text-sm">{errors.confirmPassword.message}</span>
                         )}
+                        <select
+                            {...register("role")}
+                            className="select border border-gray-300 rounded w-full p-2 text-lg"
+                        >
+                            <option value="">Select Role</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Developer">Developer</option>
+                            <option value="Tester">Tester</option>
+                        </select>
+                        {
+                            errors.role && (
+                                <span className="text-red-700 text-sm">{errors.role.message}</span>
+                            )
+                        }
 
                         <button type="submit" className="btn btn-primary w-full mt-4" disabled={isLoading}>
                             {

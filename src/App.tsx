@@ -1,4 +1,6 @@
 import {  createBrowserRouter, RouterProvider} from 'react-router';
+import { useEffect } from 'react';
+import { useAppDispatch } from './store';
 import Home from "./components/Home";
 import { Loginform } from './components/Auth/loginform';
 import { Register } from './components/Auth/Register';
@@ -8,11 +10,18 @@ import { Toaster } from 'sonner';
 import { About } from './components/About/About';
 import { Footer } from './components/Footer/footer';
 import DashboardPage from './components/DashboardPage';
+import { initializeAuth } from './store/authSlice';
 
 
 
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
+
   const router = createBrowserRouter([
     {
       path: '/',
