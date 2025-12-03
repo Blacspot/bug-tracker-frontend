@@ -9,7 +9,6 @@ import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { Toaster } from 'sonner';
 import { About } from './components/About/About';
 import { Footer } from './components/Footer/footer';
-import DashboardPage from './components/DashboardPage';
 import RoleBasedDashboard from './components/Dashboards/RoleBasedDashboard';
 import UserDashboard from './components/Dashboards/UserDashboard';
 import AdminDashboard from './components/Dashboards/AdminDashboard';

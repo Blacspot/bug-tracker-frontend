@@ -1,4 +1,3 @@
-import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { Plus, Users, TrendingUp, FileText, LogOut, Activity, CheckCircle, AlertCircle, Clock } from 'lucide-react';
@@ -153,7 +152,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen  from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -163,7 +162,7 @@ const AdminDashboard = () => {
           </div>
           <button 
             onClick={handleLogout}
-            className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl"
+            className="flex items-center space-x-2 px-5 py-2.5  from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl"
           >
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Sign Out</span>
@@ -182,7 +181,7 @@ const AdminDashboard = () => {
                   Active accounts
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+              <div className="w-14 h-14  from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
                 <Users className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -195,7 +194,7 @@ const AdminDashboard = () => {
                 <p className="text-4xl font-bold text-gray-900">{totalProjects}</p>
                 <p className="text-xs text-gray-500 mt-2">Ongoing projects</p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
+              <div className="w-14 h-14  from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
                 <Activity className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -208,7 +207,7 @@ const AdminDashboard = () => {
                 <p className="text-4xl font-bold text-gray-900">{totalComments}</p>
                 <p className="text-xs text-gray-500 mt-2">Bug discussions</p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-200">
+              <div className="w-14 h-14  from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-200">
                 <FileText className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -224,7 +223,7 @@ const AdminDashboard = () => {
                   Performance metric
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
+              <div className="w-14 h-14  from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
                 <TrendingUp className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -233,7 +232,7 @@ const AdminDashboard = () => {
 
         {/* Admin Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 p-6 text-white">
+          <div className=" from-indigo-500 to-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Reports</h2>
@@ -246,7 +245,7 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white">
+          <div className=" from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold mb-2">User Management</h2>
@@ -298,7 +297,7 @@ const AdminDashboard = () => {
               <h2 className="text-xl font-bold text-gray-900">Recent Bugs</h2>
               <p className="text-sm text-gray-500 mt-1">Latest reported issues</p>
             </div>
-            <button className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
+            <button className="flex items-center space-x-2 px-5 py-2.5  from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
               <Plus className="w-4 h-4" />
               <span className="font-medium">Report Bug</span>
             </button>
@@ -307,7 +306,7 @@ const AdminDashboard = () => {
             {bugs.slice(0, 5).map(bug => (
               <div
                 key={bug.id}
-                className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer bg-gradient-to-r from-white to-gray-50"
+                className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer  from-white to-gray-50"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
