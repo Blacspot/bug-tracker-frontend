@@ -16,18 +16,23 @@ const RoleBasedDashboard: React.FC = () => {
       return;
     }
 
+    // If user role is not loaded yet, wait
+    if (!user.role) {
+      return;
+    }
+
     // Normalize user role to handle different backend formats
-    const normalizedRole = user.role ? user.role.toLowerCase().trim() : '';
+    const normalizedRole = user.role.toLowerCase().trim();
     console.log('User data:', user);
     console.log('Raw role:', user.role);
     console.log('Normalized role:', normalizedRole);
 
     // Check for common role variations
     const isAdmin = normalizedRole === 'admin';
-    const isUser = normalizedRole === 'user' || normalizedRole === 'user';
-    
+    const isUser = normalizedRole === 'user';
+
     // If user role is not recognized, redirect to login
-    if (!normalizedRole || (!isAdmin && !isUser)) {
+    if (!isAdmin && !isUser) {
       console.error('Invalid user role:', user.role, 'Normalized:', normalizedRole);
       navigate('/login');
       return;
@@ -36,14 +41,14 @@ const RoleBasedDashboard: React.FC = () => {
     // If the current path doesn't match the user's role, redirect to the appropriate route
     const currentPath = window.location.pathname;
     const shouldRouteTo = isAdmin ? '/adminpage' : '/userdashboard';
-    
+
     if (currentPath !== shouldRouteTo && currentPath !== '/dashboard') {
       navigate(shouldRouteTo, { replace: true });
     }
   }, [user, navigate]);
 
   // Show loading while determining user role
-  if (!user) {
+  if (!user || !user.role) {
     return (
       <div className="min-h-screen  from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
