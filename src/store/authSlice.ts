@@ -55,6 +55,14 @@ const verifyEmailThunk = createAsyncThunk(
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Verification failed');
+      
+      // Store verification status in localStorage for future logins
+      const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
+      if (!verifiedEmails.includes(payload.email)) {
+        verifiedEmails.push(payload.email);
+        localStorage.setItem('verifiedEmails', JSON.stringify(verifiedEmails));
+      }
+      
       return data;
     } catch (error) {
       return rejectWithValue((error as Error).message);
@@ -200,8 +208,17 @@ const initializeAuth = createAsyncThunk(
         
         if (response.ok) {
           const freshUserData = await response.json();
+          
+          // Check if user email is in the verifiedEmails list for additional verification
+          const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
+          const isEmailVerified = verifiedEmails.includes(user.email);
+          
           // Update localStorage with fresh user data including verification status
-          const updatedUser = { ...user, ...freshUserData };
+          const updatedUser = { 
+            ...user, 
+            ...freshUserData,
+            isVerified: freshUserData.isVerified || isEmailVerified 
+          };
           localStorage.setItem('user', JSON.stringify(updatedUser));
           return { token, user: updatedUser };
         } else {
@@ -259,6 +276,7 @@ const authSlice = createSlice({
       state.token = null;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // Note: We keep verifiedEmails in localStorage so users don't lose their verification status
     },
   },
   extraReducers: (builder) => {
@@ -276,6 +294,7 @@ const authSlice = createSlice({
         if (state.user) {
           state.user = { ...state.user, isVerified: true };
         }
+        // Store verification status in localStorage for future logins (if not already done by thunk)
       })
       .addCase(verifyEmailThunk.rejected, (state, action) => {
         state.message = action.payload as string;
@@ -288,9 +307,22 @@ const authSlice = createSlice({
       })
       .addCase(loginThunk.fulfilled, (state, action) => {
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        // Check if user email is in the verifiedEmails list
+        const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
+        const isEmailVerified = verifiedEmails.includes(action.payload.user.email);
+        
+        // Update user verification status based on stored verification data
+        const updatedUser = { 
+          ...action.payload.user, 
+          isVerified: action.payload.user.isVerified || isEmailVerified 
+        };
+        
+        state.user = updatedUser;
         state.token = action.payload.token;
         state.message = 'Login successful';
+        
+        // Update localStorage with the corrected user data
+        localStorage.setItem('user', JSON.stringify(updatedUser));
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.message = action.payload as string;
@@ -306,6 +338,9 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        
+        // Update localStorage with the final user data
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(getAllUsersThunk.fulfilled, (state, action) => {
         state.allUsers = action.payload;
