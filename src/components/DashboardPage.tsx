@@ -1,9 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Dashboard } from './Dashboard/Dashboard';
-import { AdminDashboard } from './Dashboards/AdminDashboard';
-import { TesterDashboard } from './Dashboards/TesterDashboard';
-import { DeveloperDashboard } from './Dashboards/DeveloperDashboard';
+import AdminDashboard from './Dashboards/AdminDashboard';
 import { initialBugs, initialProjects, initialUsers } from './data/initialData';
 import type { RootState } from '../store';
 
@@ -24,36 +22,7 @@ const DashboardPage: React.FC = () => {
   const renderDashboard = () => {
     switch (currentUser.role) {
       case 'Admin':
-        return (
-          <AdminDashboard
-            bugs={initialBugs}
-            projects={initialProjects}
-            users={initialUsers}
-            currentUser={currentUser}
-            onBugClick={handleBugClick}
-            onNewBug={handleNewBug}
-          />
-        );
-      case 'Tester':
-        return (
-          <TesterDashboard
-            bugs={initialBugs}
-            projects={initialProjects}
-            currentUser={currentUser}
-            onBugClick={handleBugClick}
-            onNewBug={handleNewBug}
-          />
-        );
-      case 'Developer':
-        return (
-          <DeveloperDashboard
-            bugs={initialBugs}
-            projects={initialProjects}
-            currentUser={currentUser}
-            onBugClick={handleBugClick}
-            onNewBug={handleNewBug}
-          />
-        );
+        return <AdminDashboard />;
       default:
         return (
           <Dashboard

@@ -2,9 +2,9 @@ import type { User, Project, Bug } from '../types';
 
 export const initialUsers: User[] = [
   { id: '1', name: 'Admin User', email: 'admin@bugtrack.com', role: 'Admin' },
-  { id: '2', name: 'John Tester', email: 'tester@bugtrack.com', role: 'Tester' },
-  { id: '3', name: 'Jane Developer', email: 'dev1@bugtrack.com', role: 'Developer' },
-  { id: '4', name: 'Mike Developer', email: 'dev2@bugtrack.com', role: 'Developer' },
+  { id: '2', name: 'John User', email: 'user1@bugtrack.com', role: 'User' },
+  { id: '3', name: 'Jane User', email: 'user2@bugtrack.com', role: 'User' },
+  { id: '4', name: 'Mike User', email: 'user3@bugtrack.com', role: 'User' },
 ];
 
 export const initialProjects: Project[] = [
@@ -34,9 +34,9 @@ export const initialBugs: Bug[] = [
     status: 'Open',
     stepsToReproduce: '1. Add items to cart\n2. Go to checkout\n3. Enter payment details\n4. Click submit',
     reportedBy: '2',
-    reporterName: 'John Tester',
+    reporterName: 'John User',
     assignedTo: '3',
-    assignedToName: 'Jane Developer',
+    assignedToName: 'Jane User',
     createdAt: new Date('2024-11-01'),
     updatedAt: new Date('2024-11-01'),
     comments: [],
@@ -51,9 +51,9 @@ export const initialBugs: Bug[] = [
     status: 'In Progress',
     stepsToReproduce: '1. Use search bar\n2. Type "laptop"\n3. See wrong products',
     reportedBy: '2',
-    reporterName: 'John Tester',
+    reporterName: 'John User',
     assignedTo: '4',
-    assignedToName: 'Mike Developer',
+    assignedToName: 'Mike User',
     createdAt: new Date('2024-11-03'),
     updatedAt: new Date('2024-11-05'),
     comments: [
@@ -61,7 +61,7 @@ export const initialBugs: Bug[] = [
         id: '1',
         bugId: '2',
         userId: '4',
-        userName: 'Mike Developer',
+        userName: 'Mike User',
         text: 'Looking into the search algorithm. Found the issue in the indexing.',
         createdAt: new Date('2024-11-05')
       }

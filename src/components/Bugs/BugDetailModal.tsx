@@ -116,7 +116,7 @@ export const BugDetailModal: React.FC<BugDetailModalProps> = ({
           </div>
 
           {/* Status Update */}
-          {(currentUser.role === 'Admin' || currentUser.role === 'Developer') && (
+          {(currentUser.role === 'Admin' || currentUser.role === 'User') && (
             <div>
               <h3 className="text-gray-900 mb-2">Update Status</h3>
               <div className="flex flex-wrap gap-2">
@@ -138,17 +138,17 @@ export const BugDetailModal: React.FC<BugDetailModalProps> = ({
           )}
 
           {/* Assign Developer */}
-          {(currentUser.role === 'Admin' || currentUser.role === 'Tester') && (
+          {(currentUser.role === 'Admin' || currentUser.role === 'User') && (
             <div>
-              <h3 className="text-gray-900 mb-2">Assign to Developer</h3>
+              <h3 className="text-gray-900 mb-2">Assign to User</h3>
               <select
                 value={bug.assignedTo || ''}
                 onChange={(e) => onAssign(bug.id, e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="">Unassigned</option>
-                {users.filter(u => u.role === 'Developer').map(dev => (
-                  <option key={dev.id} value={dev.id}>{dev.name}</option>
+                {users.filter(u => u.role === 'User').map(user => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
                 ))}
               </select>
             </div>

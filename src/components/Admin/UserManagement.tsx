@@ -17,12 +17,12 @@ export const UserManagement: React.FC<UserManagementProps> = ({
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'Developer' as UserRole });
+  const [newUser, setNewUser] = useState({ name: '', email: '', role: 'User' as UserRole });
 
   const handleAddUser = () => {
     if (newUser.name && newUser.email) {
       onAddUser(newUser);
-      setNewUser({ name: '', email: '', role: 'Developer' });
+      setNewUser({ name: '', email: '', role: 'User' });
       setShowAddForm(false);
     }
   };
@@ -73,8 +73,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({
                 className="select select-bordered"
               >
                 <option value="Admin">Admin</option>
-                <option value="Tester">Tester</option>
-                <option value="Developer">Developer</option>
+                <option value="User">User</option>
               </select>
             </div>
             <div className="flex justify-end space-x-2 mt-4">
@@ -118,11 +117,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({
                         className="select select-bordered select-sm"
                       >
                         <option value="Admin">Admin</option>
-                        <option value="Tester">Tester</option>
-                        <option value="Developer">Developer</option>
+                        <option value="User">User</option>
                       </select>
                     ) : (
-                      <span className={`badge ${user.role === 'Admin' ? 'badge-primary' : user.role === 'Tester' ? 'badge-secondary' : 'badge-accent'}`}>
+                      <span className={`badge ${user.role === 'Admin' ? 'badge-primary' : 'badge-accent'}`}>
                         {user.role}
                       </span>
                     )}

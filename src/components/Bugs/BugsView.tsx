@@ -40,7 +40,7 @@ export const BugsView: React.FC<BugsViewProps> = ({
     const matchesSeverity = filterSeverity === 'all' || bug.severity === filterSeverity;
     const matchesSearch = bug.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           bug.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = currentUser.role === 'Developer'
+    const matchesRole = currentUser.role === 'User'
       ? bug.assignedTo === currentUser.id || !bug.assignedTo
       : true;
         
@@ -103,7 +103,7 @@ export const BugsView: React.FC<BugsViewProps> = ({
           <h2 className="text-xl text-gray-900">
             Bugs ({filteredBugs.length})
           </h2>
-          {(currentUser.role === 'Admin' || currentUser.role === 'Tester') && (
+          {(currentUser.role === 'Admin' || currentUser.role === 'User') && (
             <button
               onClick={onNewBug}
               className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"

@@ -35,11 +35,23 @@ export const Loginform = () => {
       const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
         setIsLoading(true)
         try {
-            await dispatch(loginThunk(data)).unwrap()
+            const result = await dispatch(loginThunk(data)).unwrap()
             toast.success("Login successful")
             navigate('/dashboard')
         } catch (error) {
-            toast.error(error as string || 'Login failed')
+            const errorMessage = error as string
+            
+            // Enhanced verification error handling
+            if (errorMessage.toLowerCase().includes('not verified') || 
+                errorMessage.toLowerCase().includes('verify your email') ||
+                errorMessage.toLowerCase().includes('email not verified') ||
+                errorMessage.toLowerCase().includes('verification required')) {
+                
+                toast.error('Please verify your email before logging in')
+                navigate('/verification', { state: { email: data.email } })
+            } else {
+                toast.error(errorMessage || 'Login failed')
+            }
         } finally {
             setIsLoading(false)
         }

@@ -51,7 +51,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl text-gray-900">Recent Bugs</h2>
-          {(currentUser.role === 'Admin' || currentUser.role === 'Tester') && (
+          {(currentUser.role === 'Admin' || currentUser.role === 'User') && (
             <button
               onClick={onNewBug}
               className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
