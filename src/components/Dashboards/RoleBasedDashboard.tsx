@@ -16,16 +16,26 @@ const RoleBasedDashboard: React.FC = () => {
       return;
     }
 
+    // Normalize user role to handle different backend formats
+    const normalizedRole = user.role ? user.role.toLowerCase().trim() : '';
+    console.log('User data:', user);
+    console.log('Raw role:', user.role);
+    console.log('Normalized role:', normalizedRole);
+
+    // Check for common role variations
+    const isAdmin = normalizedRole === 'admin';
+    const isUser = normalizedRole === 'user' || normalizedRole === 'user';
+    
     // If user role is not recognized, redirect to login
-    if (!user.role || !['Admin', 'User'].includes(user.role)) {
-      console.error('Invalid user role:', user.role);
+    if (!normalizedRole || (!isAdmin && !isUser)) {
+      console.error('Invalid user role:', user.role, 'Normalized:', normalizedRole);
       navigate('/login');
       return;
     }
 
     // If the current path doesn't match the user's role, redirect to the appropriate route
     const currentPath = window.location.pathname;
-    const shouldRouteTo = user.role === 'Admin' ? '/adminpage' : '/userdashboard';
+    const shouldRouteTo = isAdmin ? '/adminpage' : '/userdashboard';
     
     if (currentPath !== shouldRouteTo && currentPath !== '/dashboard') {
       navigate(shouldRouteTo, { replace: true });
@@ -45,9 +55,17 @@ const RoleBasedDashboard: React.FC = () => {
   }
 
   // Render the appropriate dashboard based on user role
-  if (user.role === 'Admin') {
+  const normalizedRole = user.role ? user.role.toLowerCase().trim() : '';
+  const isAdmin = normalizedRole === 'admin';
+  const isUser = normalizedRole === 'user';
+  
+  if (isAdmin) {
     return <AdminDashboard />;
+  } else if (isUser) {
+    return <UserDashboard />;
   } else {
+    // Fallback to UserDashboard for any unrecognized role
+    console.warn('Unknown user role, defaulting to UserDashboard:', user.role);
     return <UserDashboard />;
   }
 };

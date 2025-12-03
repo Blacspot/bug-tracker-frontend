@@ -1,129 +1,37 @@
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router';
 import { Plus, Users, TrendingUp, FileText, LogOut, Activity, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import type { User, Project, Bug, BugSeverity, BugStatus } from '../types';
-import { logout } from '../../store/authSlice';
-import type { AppDispatch } from '../../store';
 
 // Mock data for demonstration
-const mockBugs: Bug[] = [
-  { 
-    id: '1', 
-    title: 'Login authentication fails on mobile', 
-    description: 'Users cannot authenticate on mobile devices',
-    severity: 'High', 
-    status: 'Open', 
-    projectId: '1', 
-    createdAt: new Date('2024-01-15'), 
-    updatedAt: new Date('2024-01-15'),
-    reportedBy: '3', 
-    reporterName: 'Admin User',
-    assignedTo: '1', 
-    assignedToName: 'John Doe',
-    stepsToReproduce: 'Step 1: Open app\nStep 2: Click login',
-    comments: [] as any[],
-    attachments: []
-  },
-  { 
-    id: '2', 
-    title: 'Dashboard loading performance issue', 
-    description: 'Dashboard takes too long to load',
-    severity: 'Critical', 
-    status: 'In Progress', 
-    projectId: '2', 
-    createdAt: new Date('2024-01-14'), 
-    updatedAt: new Date('2024-01-14'),
-    reportedBy: '3', 
-    reporterName: 'Admin User',
-    assignedTo: '2', 
-    assignedToName: 'Jane Smith',
-    stepsToReproduce: 'Navigate to dashboard',
-    comments: [{}, {}] as any[],
-    attachments: []
-  },
-  { 
-    id: '3', 
-    title: 'Export feature not working', 
-    description: 'Export function returns empty results',
-    severity: 'Medium', 
-    status: 'Resolved', 
-    projectId: '1', 
-    createdAt: new Date('2024-01-13'), 
-    updatedAt: new Date('2024-01-13'),
-    reportedBy: '3', 
-    reporterName: 'Admin User',
-    assignedTo: '1', 
-    assignedToName: 'John Doe',
-    stepsToReproduce: 'Click export button',
-    comments: [{}] as any[],
-    attachments: []
-  },
-  { 
-    id: '4', 
-    title: 'UI alignment issues in settings', 
-    description: 'Misaligned elements in settings page',
-    severity: 'Low', 
-    status: 'Open', 
-    projectId: '3', 
-    createdAt: new Date('2024-01-12'), 
-    updatedAt: new Date('2024-01-12'),
-    reportedBy: '3', 
-    reporterName: 'Admin User',
-    assignedTo: '3', 
-    assignedToName: 'Admin User',
-    stepsToReproduce: 'Go to settings page',
-    comments: [] as any[],
-    attachments: []
-  },
-  { 
-    id: '5', 
-    title: 'Database connection timeout', 
-    description: 'Frequent connection timeouts to database',
-    severity: 'Critical', 
-    status: 'In Progress', 
-    projectId: '2', 
-    createdAt: new Date('2024-01-11'), 
-    updatedAt: new Date('2024-01-11'),
-    reportedBy: '3', 
-    reporterName: 'Admin User',
-    assignedTo: '2', 
-    assignedToName: 'Jane Smith',
-    stepsToReproduce: 'Make database queries',
-    comments: [{}, {}, {}] as any[],
-    attachments: []
-  },
+const mockBugs = [
+  { id: 1, title: 'Login authentication fails on mobile', status: 'open', priority: 'high', projectId: 1, createdAt: '2024-01-15', assignedTo: 1, comments: [] },
+  { id: 2, title: 'Dashboard loading performance issue', status: 'in-progress', priority: 'critical', projectId: 2, createdAt: '2024-01-14', assignedTo: 2, comments: [{}, {}] },
+  { id: 3, title: 'Export feature not working', status: 'resolved', priority: 'medium', projectId: 1, createdAt: '2024-01-13', assignedTo: 1, comments: [{}] },
+  { id: 4, title: 'UI alignment issues in settings', status: 'open', priority: 'low', projectId: 3, createdAt: '2024-01-12', assignedTo: 3, comments: [] },
+  { id: 5, title: 'Database connection timeout', status: 'in-progress', priority: 'critical', projectId: 2, createdAt: '2024-01-11', assignedTo: 2, comments: [{}, {}, {}] },
 ];
 
-const mockProjects: Project[] = [
-  { id: '1', name: 'Mobile App', description: 'Mobile application development', createdBy: '3', createdAt: new Date('2024-01-01') },
-  { id: '2', name: 'Web Platform', description: 'Web-based platform development', createdBy: '3', createdAt: new Date('2024-01-01') },
-  { id: '3', name: 'API Service', description: 'Backend API services', createdBy: '3', createdAt: new Date('2024-01-01') },
+const mockProjects = [
+  { id: 1, name: 'Mobile App' },
+  { id: 2, name: 'Web Platform' },
+  { id: 3, name: 'API Service' },
 ];
 
-const mockUsers: User[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', role: 'User' },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
-  { id: '3', name: 'Admin User', email: 'admin@example.com', role: 'Admin' },
+const mockUsers = [
+  { id: 1, name: 'John Doe', role: 'developer' },
+  { id: 2, name: 'Jane Smith', role: 'developer' },
+  { id: 3, name: 'Admin User', role: 'admin' },
 ];
 
 const AdminDashboard = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate();
   const bugs = mockBugs;
   const projects = mockProjects;
   const users = mockUsers;
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
-
   const stats = {
     total: bugs.length,
-    open: bugs.filter(b => b.status === 'Open').length,
-    inProgress: bugs.filter(b => b.status === 'In Progress').length,
-    resolved: bugs.filter(b => b.status === 'Resolved').length,
-    critical: bugs.filter(b => b.severity === 'Critical').length,
+    open: bugs.filter(b => b.status === 'open').length,
+    inProgress: bugs.filter(b => b.status === 'in-progress').length,
+    resolved: bugs.filter(b => b.status === 'resolved').length,
+    critical: bugs.filter(b => b.priority === 'critical').length,
   };
 
   const totalUsers = users.length;
@@ -131,28 +39,27 @@ const AdminDashboard = () => {
   const totalComments = bugs.reduce((sum, bug) => sum + bug.comments.length, 0);
   const resolutionRate = stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0;
 
-  const getPriorityColor = (priority: BugSeverity): string => {
-    const colors: Record<BugSeverity, string> = {
-      Critical: 'text-red-600 bg-red-50 border-red-200',
-      High: 'text-orange-600 bg-orange-50 border-orange-200',
-      Medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-      Low: 'text-green-600 bg-green-50 border-green-200',
+  const getPriorityColor = (priority: string): string => {
+    const colors: Record<string, string> = {
+      critical: 'text-red-600 bg-red-50 border-red-200',
+      high: 'text-orange-600 bg-orange-50 border-orange-200',
+      medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
+      low: 'text-green-600 bg-green-50 border-green-200',
     };
-    return colors[priority] || colors.Medium;
+    return colors[priority] || colors.medium;
   };
 
-  const getStatusColor = (status: BugStatus): string => {
-    const colors: Record<BugStatus, string> = {
-      'Open': 'text-blue-700 bg-blue-100',
-      'In Progress': 'text-purple-700 bg-purple-100',
-      'Resolved': 'text-green-700 bg-green-100',
-      'Closed': 'text-gray-700 bg-gray-100',
+  const getStatusColor = (status: string): string => {
+    const colors: Record<string, string> = {
+      open: 'text-blue-700 bg-blue-100',
+      'in-progress': 'text-purple-700 bg-purple-100',
+      resolved: 'text-green-700 bg-green-100',
     };
-    return colors[status] || colors['Open'];
+    return colors[status] || colors.open;
   };
 
   return (
-    <div className="min-h-screen  from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -160,10 +67,7 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Admin Dashboard</h1>
             <p className="text-gray-600">Manage your bug tracking system</p>
           </div>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center space-x-2 px-5 py-2.5  from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl"
-          >
+          <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl">
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Sign Out</span>
           </button>
@@ -181,7 +85,7 @@ const AdminDashboard = () => {
                   Active accounts
                 </p>
               </div>
-              <div className="w-14 h-14  from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+              <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
                 <Users className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -194,7 +98,7 @@ const AdminDashboard = () => {
                 <p className="text-4xl font-bold text-gray-900">{totalProjects}</p>
                 <p className="text-xs text-gray-500 mt-2">Ongoing projects</p>
               </div>
-              <div className="w-14 h-14  from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
+              <div className="w-14 h-14 bg-linear-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
                 <Activity className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -207,7 +111,7 @@ const AdminDashboard = () => {
                 <p className="text-4xl font-bold text-gray-900">{totalComments}</p>
                 <p className="text-xs text-gray-500 mt-2">Bug discussions</p>
               </div>
-              <div className="w-14 h-14  from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-200">
+              <div className="w-14 h-14 bg-linear-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-200">
                 <FileText className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -223,7 +127,7 @@ const AdminDashboard = () => {
                   Performance metric
                 </p>
               </div>
-              <div className="w-14 h-14  from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
+              <div className="w-14 h-14 bg-linear-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
                 <TrendingUp className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -232,7 +136,7 @@ const AdminDashboard = () => {
 
         {/* Admin Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className=" from-indigo-500 to-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 p-6 text-white">
+          <div className="bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Reports</h2>
@@ -245,7 +149,7 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          <div className=" from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white">
+          <div className="bg-linear-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-xl shadow-emerald-200 p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold mb-2">User Management</h2>
@@ -297,7 +201,7 @@ const AdminDashboard = () => {
               <h2 className="text-xl font-bold text-gray-900">Recent Bugs</h2>
               <p className="text-sm text-gray-500 mt-1">Latest reported issues</p>
             </div>
-            <button className="flex items-center space-x-2 px-5 py-2.5  from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
+            <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
               <Plus className="w-4 h-4" />
               <span className="font-medium">Report Bug</span>
             </button>
@@ -306,14 +210,14 @@ const AdminDashboard = () => {
             {bugs.slice(0, 5).map(bug => (
               <div
                 key={bug.id}
-                className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer  from-white to-gray-50"
+                className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer bg-linear-to-r from-white to-gray-50"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
                       <h3 className="font-semibold text-gray-900">{bug.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(bug.severity)}`}>
-                        {bug.severity}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(bug.priority)}`}>
+                        {bug.priority}
                       </span>
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -325,7 +229,7 @@ const AdminDashboard = () => {
                         <FileText className="w-4 h-4 mr-1" />
                         {bug.comments.length} comments
                       </span>
-                      <span>{bug.createdAt.toLocaleDateString()}</span>
+                      <span>{bug.createdAt}</span>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(bug.status)}`}>

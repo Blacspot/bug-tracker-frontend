@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../../store";
 import { loginThunk } from "../../store/authSlice";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type LoginInputs = {
   email: string;
@@ -24,6 +24,13 @@ export const Loginform = () => {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
 
+  useEffect(() => {
+    // Clear any pending verification data that wasn't used (expired/older sessions)
+    localStorage.removeItem('pendingVerification')
+    localStorage.removeItem('pendingLoginEmail')
+    localStorage.removeItem('verifiedEmails')
+  }, [])
+
    const {
         register,
         handleSubmit,
@@ -37,21 +44,14 @@ export const Loginform = () => {
         try {
             await dispatch(loginThunk(data)).unwrap()
             toast.success("Login successful")
+            
+            // Clear any pending login email after successful login
+            localStorage.removeItem('pendingLoginEmail')
+            localStorage.removeItem('pendingVerification') // Clean up any old data
+            
             navigate('/dashboard')
         } catch (error) {
-            const errorMessage = error as string
-            
-            // Enhanced verification error handling
-            if (errorMessage.toLowerCase().includes('not verified') || 
-                errorMessage.toLowerCase().includes('verify your email') ||
-                errorMessage.toLowerCase().includes('email not verified') ||
-                errorMessage.toLowerCase().includes('verification required')) {
-                
-                toast.error('Please verify your email before logging in')
-                navigate('/verification', { state: { email: data.email } })
-            } else {
-                toast.error(errorMessage || 'Login failed')
-            }
+            toast.error((error as string) || 'Login failed')
         } finally {
             setIsLoading(false)
         }

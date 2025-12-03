@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { useNavigate } from "react-router"
 import { useState } from "react"
 import { useDispatch } from 'react-redux'
-import { registerThunk } from '../../store/authSlice'
+import { registerThunk, loginThunk } from '../../store/authSlice'
 import type { AppDispatch } from '../../store'
 
 type RegisterInputs = {
@@ -47,8 +47,22 @@ export const Register = () => {
                 email: data.email,
                 password: data.password
             })).unwrap()
-            toast.success('Registration successful')
-            navigate('/verification', { state: { email: data.email } })
+            
+            toast.success('Registration successful! Logging you in...')
+            
+            // Auto-login after successful registration
+            try {
+                await dispatch(loginThunk({
+                    email: data.email,
+                    password: data.password
+                })).unwrap()
+                
+                toast.success('Welcome! Redirecting to dashboard...')
+                navigate('/dashboard')
+            } catch (loginError) {
+                toast.error('Registration successful but login failed. Please try logging in manually.')
+                navigate('/login')
+            }
         } catch (error) {
             toast.error((error as string) || 'Registration failed')
         } finally {

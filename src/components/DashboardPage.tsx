@@ -4,10 +4,18 @@ import { Dashboard } from './Dashboard/Dashboard';
 import AdminDashboard from './Dashboards/AdminDashboard';
 import { initialBugs, initialProjects, initialUsers } from './data/initialData';
 import type { RootState } from '../store';
+import type { UserRole } from './types';
 
 const DashboardPage: React.FC = () => {
   const authUser = useSelector((state: RootState) => state.auth.user);
-  const currentUser = authUser ? initialUsers.find(u => u.role === authUser.role) || initialUsers[0] : initialUsers[0];
+  
+  // Use authenticated user directly if available, otherwise fall back to initialUsers
+  const currentUser = authUser ? {
+    id: String(initialUsers.length + 1), // Generate a temporary ID for authenticated users
+    name: authUser.email?.split('@')[0] || 'User', // Use email prefix as name
+    email: authUser.email || '',
+    role: (authUser.role === 'Admin' ? 'Admin' : 'User') as UserRole // Ensure role is proper UserRole type
+  } : initialUsers[0];
 
   const handleBugClick = (bug: any) => {
     console.log('Bug clicked:', bug);

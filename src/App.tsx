@@ -4,7 +4,7 @@ import { useAppDispatch } from './store';
 import Home from "./components/Home";
 import { Loginform } from './components/Auth/loginform';
 import { Register } from './components/Auth/Register';
-import { Verification } from './components/Auth/verification';
+
 import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { Toaster } from 'sonner';
 import { About } from './components/About/About';
@@ -37,10 +37,7 @@ function App() {
       path: '/register',
       element: <Register />
     },
-    {
-      path: '/verification',
-      element: <Verification />
-    },
+
     {
       path: '/about',
       element: <About />
@@ -55,11 +52,11 @@ function App() {
     },
     {
       path: '/userdashboard',
-      element: <ProtectedRoute><UserDashboard /></ProtectedRoute>
+      element: <UserDashboard />//<ProtectedRoute><UserDashboard /></ProtectedRoute>
     },
     {
       path: '/adminpage',
-      element: <ProtectedRoute><AdminDashboard /></ProtectedRoute>
+      element: <AdminDashboard />//<ProtectedRoute><AdminDashboard /></ProtectedRoute>
     },
 
   ])
