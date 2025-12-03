@@ -35,7 +35,7 @@ export const Loginform = () => {
       const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
         setIsLoading(true)
         try {
-            const result = await dispatch(loginThunk(data)).unwrap()
+            await dispatch(loginThunk(data)).unwrap()
             toast.success("Login successful")
             navigate('/dashboard')
         } catch (error) {

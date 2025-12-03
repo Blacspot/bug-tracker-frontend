@@ -187,20 +187,27 @@ const mockProjects: Project[] = [
   }
 ];
 
+// Type for the filter state
+type FilterValue = BugStatus | 'all';
+
 const UserDashboard: React.FC = () => {
-  const [filter, setFilter] = useState<BugStatus | 'all'>('all');
+  const [filter, setFilter] = useState<FilterValue>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Get current user from Redux store or use default
-  const currentUser = useSelector((state: RootState) => 
-    state.auth.user || {
-      role: 'Admin',
-      email: 'admin@bugtrack.com'
-    }
-  );
+  // Get current user from Redux store
+  const currentUser = useSelector((state: RootState) => state.auth.user);
 
   // Use a mock user ID for demonstration since auth state doesn't include id
   const currentUserId = '1';
+
+  // Fallback user data for cases where user is not authenticated
+  const defaultUser = {
+    role: 'Admin',
+    email: 'admin@bugtrack.com',
+    isVerified: true
+  };
+
+  const activeUser = currentUser || defaultUser;
 
   const bugs = mockBugs;
   const projects = mockProjects;
@@ -254,23 +261,23 @@ const UserDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              {currentUser?.email?.substring(0, 2).toUpperCase() || 'AU'}
+            <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              {activeUser.email?.substring(0, 2).toUpperCase() || 'AU'}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {currentUser?.email?.split('@')[0] || 'User'}!</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {activeUser.email?.split('@')[0] || 'User'}!</h1>
               <p className="text-gray-600 flex items-center mt-1">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                {currentUser?.role || 'User'} • {currentUser?.email || 'user@bugtrack.com'}
+                {activeUser.role || 'User'} • {activeUser.email || 'user@bugtrack.com'}
               </p>
             </div>
           </div>
-          <button className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl">
+          <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl">
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Sign Out</span>
           </button>
@@ -285,7 +292,7 @@ const UserDashboard: React.FC = () => {
                 <p className="text-4xl font-bold text-gray-900">{myBugsCount}</p>
                 <p className="text-xs text-gray-500 mt-2">Assigned to you</p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+              <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
                 <Briefcase className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -301,7 +308,7 @@ const UserDashboard: React.FC = () => {
                   Need attention
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+              <div className="w-14 h-14 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
                 <AlertCircle className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -317,7 +324,7 @@ const UserDashboard: React.FC = () => {
                   Working on it
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
+              <div className="w-14 h-14 bg-linear-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-200">
                 <Clock className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -333,7 +340,7 @@ const UserDashboard: React.FC = () => {
                   Great job!
                 </p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
+              <div className="w-14 h-14 bg-linear-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-200">
                 <CheckCircle className="w-7 h-7 text-white" />
               </div>
             </div>
@@ -369,7 +376,7 @@ const UserDashboard: React.FC = () => {
               <h2 className="text-xl font-bold text-gray-900">My Assigned Bugs</h2>
               <p className="text-sm text-gray-500 mt-1">Track and manage your bug assignments</p>
             </div>
-            <button className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
+            <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
               <Plus className="w-4 h-4" />
               <span className="font-medium">Report Bug</span>
             </button>
@@ -391,7 +398,7 @@ const UserDashboard: React.FC = () => {
               <Filter className="w-5 h-5 text-gray-500" />
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as BugStatus | 'all')}
+                onChange={(e) => setFilter(e.target.value as FilterValue)}
                 className="px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
               >
                 <option value="all">All Status</option>
@@ -408,7 +415,7 @@ const UserDashboard: React.FC = () => {
             {filteredBugs.map(bug => (
               <div
                 key={bug.id}
-                className="p-5 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer bg-gradient-to-r from-white to-gray-50"
+                className="p-5 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer bg-linear-to-r from-white to-gray-50"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
