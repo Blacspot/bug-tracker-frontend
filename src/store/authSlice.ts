@@ -214,10 +214,12 @@ const initializeAuth = createAsyncThunk(
           const isEmailVerified = verifiedEmails.includes(user.email);
           
           // Update localStorage with fresh user data including verification status
-          const updatedUser = { 
-            ...user, 
+          // Preserve role if fresh data doesn't have it
+          const updatedUser = {
+            ...user,
             ...freshUserData,
-            isVerified: freshUserData.isVerified || isEmailVerified 
+            role: freshUserData.role || user.role,
+            isVerified: freshUserData.isVerified || isEmailVerified
           };
           localStorage.setItem('user', JSON.stringify(updatedUser));
           return { token, user: updatedUser };
@@ -269,6 +271,15 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.message = action.payload.message;
     },
+    loadFromCache: (state) => {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      if (token && userStr) {
+        state.isAuthenticated = true;
+        state.user = JSON.parse(userStr);
+        state.token = token;
+      }
+    },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
@@ -305,25 +316,42 @@ const authSlice = createSlice({
       .addCase(resendVerificationThunk.rejected, (state, action) => {
         state.message = action.payload as string;
       })
-      .addCase(loginThunk.fulfilled, (state, action) => {
-        state.isAuthenticated = true;
-        // Check if user email is in the verifiedEmails list
-        const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
-        const isEmailVerified = verifiedEmails.includes(action.payload.user.email);
-        
-        // Update user verification status based on stored verification data
-        const updatedUser = { 
-          ...action.payload.user, 
-          isVerified: action.payload.user.isVerified || isEmailVerified 
-        };
-        
-        state.user = updatedUser;
-        state.token = action.payload.token;
-        state.message = 'Login successful';
-        
-        // Update localStorage with the corrected user data
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      })
+      // Replace the loginThunk.fulfilled case in your authSlice.ts
+
+.addCase(loginThunk.fulfilled, (state, action) => {
+  state.isAuthenticated = true;
+  
+  // Check if user email is in the verifiedEmails list
+  const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
+  const isEmailVerified = verifiedEmails.includes(action.payload.user.email);
+  
+  // Ensure role is properly set - handle different backend formats
+  let userRole = action.payload.user.role || action.payload.user.userRole || 'user';
+  
+  // Normalize role to title case (Admin or User)
+  userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
+  
+  // Update user verification status based on stored verification data
+  const updatedUser = { 
+    ...action.payload.user, 
+    role: userRole, // Ensure role is always set
+    isVerified: action.payload.user.isVerified || isEmailVerified 
+  };
+  
+  // DEBUG: Log what we're storing
+  console.log('=== AUTH SLICE LOGIN ===');
+  console.log('Original payload:', action.payload.user);
+  console.log('Updated user:', updatedUser);
+  console.log('Final role:', updatedUser.role);
+  console.log('========================');
+  
+  state.user = updatedUser;
+  state.token = action.payload.token;
+  state.message = 'Login successful';
+  
+  // Update localStorage with the corrected user data
+  localStorage.setItem('user', JSON.stringify(updatedUser));
+})
       .addCase(loginThunk.rejected, (state, action) => {
         state.message = action.payload as string;
         // Check if the error is related to verification
@@ -338,9 +366,17 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
-        
+
         // Update localStorage with the final user data
         localStorage.setItem('user', JSON.stringify(action.payload.user));
+      })
+      .addCase(initializeAuth.rejected, (state) => {
+        // If initialization fails, clear auth state
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
       })
       .addCase(getAllUsersThunk.fulfilled, (state, action) => {
         state.allUsers = action.payload;
@@ -385,7 +421,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { loginSuccess, logout } = authSlice.actions;
+export const { loginSuccess, loadFromCache, logout } = authSlice.actions;
 export { 
   registerThunk, 
   loginThunk, 

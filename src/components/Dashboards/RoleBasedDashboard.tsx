@@ -1,23 +1,27 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import type { RootState } from '../../store';
 import UserDashboard from './UserDashboard';
 import AdminDashboard from './AdminDashboard';
 
 const RoleBasedDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   useEffect(() => {
     // If no user is logged in, redirect to login
-    if (!user) {
-      navigate('/login');
+    if (!isAuthenticated || !user) {
+      console.log('No authenticated user, redirecting to login');
+      navigate('/login', { replace: true });
       return;
     }
 
     // If user role is not loaded yet, wait
     if (!user.role) {
+      console.log('User role not loaded yet, waiting...');
       return;
     }
 
@@ -34,23 +38,25 @@ const RoleBasedDashboard: React.FC = () => {
     // If user role is not recognized, redirect to login
     if (!isAdmin && !isUser) {
       console.error('Invalid user role:', user.role, 'Normalized:', normalizedRole);
-      navigate('/login');
+      navigate('/login', { replace: true });
       return;
     }
 
-    // If the current path doesn't match the user's role, redirect to the appropriate route
-    const currentPath = window.location.pathname;
-    const shouldRouteTo = isAdmin ? '/adminpage' : '/userdashboard';
+    // Only redirect if we're on the generic /dashboard route
+    // Don't redirect if already on the correct specific route
+    const currentPath = location.pathname;
+    const targetRoute = isAdmin ? '/adminpage' : '/userdashboard';
 
-    if (currentPath !== shouldRouteTo && currentPath !== '/dashboard') {
-      navigate(shouldRouteTo, { replace: true });
+    if (currentPath === '/dashboard') {
+      console.log(`Redirecting from /dashboard to ${targetRoute}`);
+      navigate(targetRoute, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, isAuthenticated, navigate, location.pathname]);
 
-  // Show loading while determining user role
-  if (!user || !user.role) {
+  // Show loading while determining user role or if not authenticated
+  if (!isAuthenticated || !user || !user.role) {
     return (
-      <div className="min-h-screen  from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
@@ -60,17 +66,14 @@ const RoleBasedDashboard: React.FC = () => {
   }
 
   // Render the appropriate dashboard based on user role
-  const normalizedRole = user.role ? user.role.toLowerCase().trim() : '';
+  const normalizedRole = user.role.toLowerCase().trim();
   const isAdmin = normalizedRole === 'admin';
-  const isUser = normalizedRole === 'user';
+  
+  console.log('Rendering dashboard for role:', normalizedRole);
   
   if (isAdmin) {
     return <AdminDashboard />;
-  } else if (isUser) {
-    return <UserDashboard />;
   } else {
-    // Fallback to UserDashboard for any unrecognized role
-    console.warn('Unknown user role, defaulting to UserDashboard:', user.role);
     return <UserDashboard />;
   }
 };

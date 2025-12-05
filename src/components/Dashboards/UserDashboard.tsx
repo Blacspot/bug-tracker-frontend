@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Plus, LogOut, CheckCircle, Clock, AlertCircle, Filter, Search, User, Briefcase, TrendingUp, MessageSquare } from 'lucide-react';
 import type { Bug, Project, BugStatus, BugSeverity } from '../types';
 import type { RootState } from '../../store';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { logout } from '../../store/authSlice';
 
 // Mock data for demonstration - updated to match existing types
 const mockBugs: Bug[] = [
@@ -193,6 +195,8 @@ type FilterValue = BugStatus | 'all';
 const UserDashboard: React.FC = () => {
   const [filter, setFilter] = useState<FilterValue>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Get current user from Redux store
   const currentUser = useSelector((state: RootState) => state.auth.user);
@@ -277,7 +281,13 @@ const UserDashboard: React.FC = () => {
               </p>
             </div>
           </div>
-          <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl">
+          <button
+            onClick={() => {
+              dispatch(logout());
+              navigate('/login');
+            }}
+            className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl"
+          >
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Sign Out</span>
           </button>

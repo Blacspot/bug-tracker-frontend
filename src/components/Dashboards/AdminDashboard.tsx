@@ -1,4 +1,7 @@
 import { Plus, Users, TrendingUp, FileText, LogOut, Activity, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { logout } from '../../store/authSlice';
 
 // Mock data for demonstration
 const mockBugs = [
@@ -22,6 +25,9 @@ const mockUsers = [
 ];
 
 const AdminDashboard = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const bugs = mockBugs;
   const projects = mockProjects;
   const users = mockUsers;
@@ -67,7 +73,13 @@ const AdminDashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-1">Admin Dashboard</h1>
             <p className="text-gray-600">Manage your bug tracking system</p>
           </div>
-          <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl">
+          <button
+            onClick={() => {
+              dispatch(logout());
+              navigate('/login');
+            }}
+            className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg shadow-red-200 hover:shadow-xl"
+          >
             <LogOut className="w-4 h-4" />
             <span className="font-medium">Sign Out</span>
           </button>

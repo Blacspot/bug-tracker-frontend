@@ -39,23 +39,44 @@ export const Loginform = () => {
         resolver: yupResolver(schema)
     })
 
-      const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
-        setIsLoading(true)
-        try {
-            await dispatch(loginThunk(data)).unwrap()
-            toast.success("Login successful")
-            
-            // Clear any pending login email after successful login
-            localStorage.removeItem('pendingLoginEmail')
-            localStorage.removeItem('pendingVerification') // Clean up any old data
-            
-            navigate('/dashboard')
-        } catch (error) {
-            toast.error((error as string) || 'Login failed')
-        } finally {
-            setIsLoading(false)
-        }
+      // Add this to your Loginform.tsx temporarily for debugging
+
+const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+  setIsLoading(true)
+  try {
+    const result = await dispatch(loginThunk(data)).unwrap()
+    
+    // DEBUG: Log the full response
+    console.log('=== LOGIN RESPONSE ===');
+    console.log('Full result:', result);
+    console.log('User object:', result.user);
+    console.log('User role:', result.user?.role);
+    console.log('Token:', result.token);
+    console.log('====================');
+    
+    // Check localStorage
+    const storedUser = localStorage.getItem('user');
+    console.log('=== LOCALSTORAGE ===');
+    console.log('Stored user:', storedUser);
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      console.log('Parsed user:', parsed);
+      console.log('Parsed role:', parsed.role);
     }
+    console.log('====================');
+    
+    toast.success("Login successful")
+    localStorage.removeItem('pendingLoginEmail')
+    localStorage.removeItem('pendingVerification')
+    
+    navigate('/dashboard')
+  } catch (error) {
+    console.error('Login error:', error);
+    toast.error((error as string) || 'Login failed')
+  } finally {
+    setIsLoading(false)
+  }
+}
 
   return (
     <div>
