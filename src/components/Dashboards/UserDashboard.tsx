@@ -76,7 +76,7 @@ const UserDashboard: React.FC = () => {
   // Filter bugs based on selected filter
   const filteredBugs = bugs.filter(bug => {
     const matchesFilter = filter === 'all' || bug.status === filter;
-    const matchesSearch = bug.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = bug.title?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     return matchesFilter && matchesSearch;
   });
 

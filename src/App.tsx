@@ -9,7 +9,6 @@ import { Toaster } from 'sonner';
 import { About } from './components/About/About';
 import { Footer } from './components/Footer/footer';
 import RoleBasedDashboard from './components/Dashboards/RoleBasedDashboard';
-import UserDashboard from './components/Dashboards/UserDashboard';
 import AdminDashboard from './components/Dashboards/AdminDashboard';
 import { initializeAuth } from './store/authSlice';
 
@@ -79,19 +78,19 @@ function App() {
     },
     {
       path: '/userdashboard',
-      element: <UserDashboard/> //(
-        //<ProtectedRoute>
-        //  <RoleBasedDashboard />
-        //</ProtectedRoute>
-      //)
+      element: (
+        <ProtectedRoute>
+          <RoleBasedDashboard />
+        </ProtectedRoute>
+      )
     },
     {
       path: '/adminpage',
-      element: <AdminDashboard/> //(
-       // <ProtectedRoute>
-       //   <RoleBasedDashboard />
-        //</ProtectedRoute>
-      //)
+      element: (
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      )
     },
   ]);
 

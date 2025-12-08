@@ -190,6 +190,19 @@ const deleteUserThunk = createAsyncThunk(
   }
 );
 
+const normalizeUserData = (userData: any) => {
+  const normalized = {
+    ...userData,
+    role: userData.role || userData.Role || userData.userRole || 'user',
+    isVerified: userData.isVerified !== undefined ? userData.isVerified : userData.IsVerified || false,
+  };
+  // Remove inconsistent casing fields
+  delete normalized.Role;
+  delete normalized.IsVerified;
+  delete normalized.userRole;
+  return normalized;
+};
+
 const initializeAuth = createAsyncThunk(
   'auth/initialize',
   async (_, { rejectWithValue }) => {
@@ -198,28 +211,29 @@ const initializeAuth = createAsyncThunk(
       const userStr = localStorage.getItem('user');
       if (token && userStr) {
         const user = JSON.parse(userStr);
-        
+
         // Verify the token and get fresh user data including verification status
         const response = await fetch(`${API_BASE}/users/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        
+
         if (response.ok) {
           const freshUserData = await response.json();
-          
+
           // Check if user email is in the verifiedEmails list for additional verification
           const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
           const isEmailVerified = verifiedEmails.includes(user.email);
-          
+
+          // Normalize fresh user data
+          const normalizedFreshData = normalizeUserData(freshUserData);
+
           // Update localStorage with fresh user data including verification status
-          // Preserve role if fresh data doesn't have it
           const updatedUser = {
             ...user,
-            ...freshUserData,
-            role: freshUserData.role || user.role,
-            isVerified: freshUserData.isVerified || isEmailVerified
+            ...normalizedFreshData,
+            isVerified: normalizedFreshData.isVerified || isEmailVerified
           };
           localStorage.setItem('user', JSON.stringify(updatedUser));
           return { token, user: updatedUser };
@@ -277,7 +291,9 @@ const authSlice = createSlice({
       const userStr = localStorage.getItem('user');
       if (token && userStr) {
         state.isAuthenticated = true;
-        state.user = JSON.parse(userStr);
+        const user = JSON.parse(userStr);
+        // Normalize user data when loading from cache
+        state.user = normalizeUserData(user);
         state.token = token;
       }
     },
@@ -317,41 +333,40 @@ const authSlice = createSlice({
       .addCase(resendVerificationThunk.rejected, (state, action) => {
         state.message = action.payload as string;
       })
-      // Replace the loginThunk.fulfilled case in your authSlice.ts
-
 .addCase(loginThunk.fulfilled, (state, action) => {
-  state.isAuthenticated = true;
-  
-  // Check if user email is in the verifiedEmails list
-  const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
-  const isEmailVerified = verifiedEmails.includes(action.payload.user.email);
-  
-  // Ensure role is properly set - handle different backend formats
-  let userRole = action.payload.user.role || action.payload.user.userRole || 'user';
-  
-  // Normalize role to title case (Admin or User)
-  userRole = userRole.charAt(0).toUpperCase() + userRole.slice(1).toLowerCase();
-  
-  // Update user verification status based on stored verification data
-  const updatedUser = { 
-    ...action.payload.user, 
-    role: userRole, // Ensure role is always set
-    isVerified: action.payload.user.isVerified || isEmailVerified 
-  };
-  
-  // DEBUG: Log what we're storing
-  console.log('=== AUTH SLICE LOGIN ===');
-  console.log('Original payload:', action.payload.user);
-  console.log('Updated user:', updatedUser);
-  console.log('Final role:', updatedUser.role);
-  console.log('========================');
-  
-  state.user = updatedUser;
-  state.token = action.payload.token;
-  state.message = 'Login successful';
-  
-  // Update localStorage with the corrected user data
-  localStorage.setItem('user', JSON.stringify(updatedUser));
+ state.isAuthenticated = true;
+
+ // Check if user email is in the verifiedEmails list
+ const verifiedEmails = JSON.parse(localStorage.getItem('verifiedEmails') || '[]');
+ const isEmailVerified = verifiedEmails.includes(action.payload.user.email);
+
+ // Normalize the user data to handle inconsistent backend casing
+ const normalizedUser = normalizeUserData(action.payload.user);
+
+ // Normalize role to title case (Admin or User)
+ const userRole = normalizedUser.role.charAt(0).toUpperCase() + normalizedUser.role.slice(1).toLowerCase();
+
+ // Update user verification status based on stored verification data
+ const updatedUser = {
+   ...normalizedUser,
+   role: userRole, // Ensure role is always set
+   isVerified: normalizedUser.isVerified || isEmailVerified
+ };
+
+ // DEBUG: Log what we're storing
+ console.log('=== AUTH SLICE LOGIN ===');
+ console.log('Original payload:', action.payload.user);
+ console.log('Normalized user:', normalizedUser);
+ console.log('Updated user:', updatedUser);
+ console.log('Final role:', updatedUser.role);
+ console.log('========================');
+
+ state.user = updatedUser;
+ state.token = action.payload.token;
+ state.message = 'Login successful';
+
+ // Update localStorage with the corrected user data
+ localStorage.setItem('user', JSON.stringify(updatedUser));
 })
       .addCase(loginThunk.rejected, (state, action) => {
         state.message = action.payload as string;
@@ -380,25 +395,27 @@ const authSlice = createSlice({
         localStorage.removeItem('user');
       })
       .addCase(getAllUsersThunk.fulfilled, (state, action) => {
-        state.allUsers = action.payload;
+        // Normalize user data for all users
+        state.allUsers = action.payload.map(normalizeUserData);
         state.message = 'Users fetched successfully';
       })
       .addCase(getAllUsersThunk.rejected, (state, action) => {
         state.message = action.payload as string;
       })
       .addCase(getProfileThunk.fulfilled, (state, action) => {
-        state.userProfile = action.payload;
+        state.userProfile = normalizeUserData(action.payload);
         state.message = 'Profile fetched successfully';
       })
       .addCase(getProfileThunk.rejected, (state, action) => {
         state.message = action.payload as string;
       })
       .addCase(updateProfileThunk.fulfilled, (state, action) => {
-        state.userProfile = action.payload;
+        const normalizedProfile = normalizeUserData(action.payload);
+        state.userProfile = normalizedProfile;
         state.message = 'Profile updated successfully';
         // Update the user data in state if username or email changed
         if (state.user) {
-          state.user = { ...state.user, ...action.payload };
+          state.user = { ...state.user, ...normalizedProfile };
         }
       })
       .addCase(updateProfileThunk.rejected, (state, action) => {
