@@ -26,14 +26,14 @@ const RoleBasedDashboard: React.FC = () => {
     }
 
     // Normalize user role to handle different backend formats
-    const normalizedRole = user.role.toLowerCase().trim();
+    const normalizedRole = user.role.trim();
     console.log('User data:', user);
     console.log('Raw role:', user.role);
-    console.log('Normalized role:', normalizedRole);
+    console.log('🔍 Role check:', normalizedRole);
 
     // Check for common role variations
-    const isAdmin = normalizedRole === 'admin';
-    const isUser = normalizedRole === 'user';
+    const isAdmin = normalizedRole === 'Admin';
+    const isUser = normalizedRole === 'User';
 
     // If user role is not recognized, redirect to login
     if (!isAdmin && !isUser) {
@@ -56,7 +56,7 @@ const RoleBasedDashboard: React.FC = () => {
   // Show loading while determining user role or if not authenticated
   if (!isAuthenticated || !user || !user.role) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
@@ -66,7 +66,7 @@ const RoleBasedDashboard: React.FC = () => {
   }
 
   // Render the appropriate dashboard based on user role
-  const normalizedRole = user.role.toLowerCase().trim();
+  const normalizedRole = user.role.trim();
   const isAdmin = normalizedRole === 'admin';
   
   console.log('Rendering dashboard for role:', normalizedRole);

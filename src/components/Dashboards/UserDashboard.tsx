@@ -1,193 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, LogOut, CheckCircle, Clock, AlertCircle, Filter, Search, User, Briefcase, TrendingUp, MessageSquare } from 'lucide-react';
 import type { Bug, Project, BugStatus, BugSeverity } from '../types';
 import type { RootState } from '../../store';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { logout } from '../../store/authSlice';
-
-// Mock data for demonstration - updated to match existing types
-const mockBugs: Bug[] = [
-  {
-    id: '1',
-    projectId: '1',
-    title: 'Login authentication fails on mobile',
-    description: 'Users cannot log in on mobile devices using the mobile app',
-    severity: 'High',
-    status: 'Open',
-    stepsToReproduce: '1. Open mobile app\n2. Enter credentials\n3. Click login',
-    reportedBy: '2',
-    reporterName: 'John User',
-    assignedTo: '1',
-    assignedToName: 'Admin User',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-    comments: [],
-    attachments: []
-  },
-  {
-    id: '2',
-    projectId: '2',
-    title: 'Dashboard loading performance issue',
-    description: 'Dashboard takes too long to load, affecting user experience',
-    severity: 'Critical',
-    status: 'In Progress',
-    stepsToReproduce: '1. Navigate to dashboard\n2. Wait for loading',
-    reportedBy: '1',
-    reporterName: 'Admin User',
-    assignedTo: '1',
-    assignedToName: 'Admin User',
-    createdAt: new Date('2024-01-14'),
-    updatedAt: new Date('2024-01-14'),
-    comments: [
-      {
-        id: '1',
-        bugId: '2',
-        userId: '1',
-        userName: 'Admin User',
-        text: 'Investigating the issue now.',
-        createdAt: new Date('2024-01-14')
-      },
-      {
-        id: '2',
-        bugId: '2',
-        userId: '1',
-        userName: 'Admin User',
-        text: 'Found the root cause - inefficient database queries.',
-        createdAt: new Date('2024-01-14')
-      }
-    ],
-    attachments: []
-  },
-  {
-    id: '3',
-    projectId: '1',
-    title: 'Export feature not working',
-    description: 'Export button does not generate the expected file',
-    severity: 'Medium',
-    status: 'Open',
-    stepsToReproduce: '1. Click export button\n2. Select format\n3. Download file',
-    reportedBy: '2',
-    reporterName: 'John User',
-    assignedTo: '1',
-    assignedToName: 'Admin User',
-    createdAt: new Date('2024-01-13'),
-    updatedAt: new Date('2024-01-13'),
-    comments: [
-      {
-        id: '3',
-        bugId: '3',
-        userId: '2',
-        userName: 'John User',
-        text: 'This is blocking our testing process.',
-        createdAt: new Date('2024-01-13')
-      }
-    ],
-    attachments: []
-  },
-  {
-    id: '4',
-    projectId: '1',
-    title: 'UI alignment issues in settings',
-    description: 'Settings page has misalignment issues on different screen sizes',
-    severity: 'Low',
-    status: 'Resolved',
-    stepsToReproduce: '1. Go to settings\n2. Resize window\n3. Observe alignment',
-    reportedBy: '3',
-    reporterName: 'Jane User',
-    assignedTo: '1',
-    assignedToName: 'Admin User',
-    createdAt: new Date('2024-01-12'),
-    updatedAt: new Date('2024-01-12'),
-    comments: [],
-    attachments: []
-  },
-  {
-    id: '5',
-    projectId: '2',
-    title: 'Database connection timeout',
-    description: 'Frequent connection timeouts with the database server',
-    severity: 'Critical',
-    status: 'In Progress',
-    stepsToReproduce: '1. Perform database operations\n2. Wait for timeout',
-    reportedBy: '1',
-    reporterName: 'Admin User',
-    assignedTo: '1',
-    assignedToName: 'Admin User',
-    createdAt: new Date('2024-01-11'),
-    updatedAt: new Date('2024-01-11'),
-    comments: [
-      {
-        id: '4',
-        bugId: '5',
-        userId: '1',
-        userName: 'Admin User',
-        text: 'Contacted database administrator.',
-        createdAt: new Date('2024-01-11')
-      },
-      {
-        id: '5',
-        bugId: '5',
-        userId: '1',
-        userName: 'Admin User',
-        text: 'Adjusting connection pool settings.',
-        createdAt: new Date('2024-01-11')
-      },
-      {
-        id: '6',
-        bugId: '5',
-        userId: '1',
-        userName: 'Admin User',
-        text: 'Monitoring improvements now.',
-        createdAt: new Date('2024-01-11')
-      }
-    ],
-    attachments: []
-  },
-  {
-    id: '6',
-    projectId: '1',
-    title: 'Email notification not sending',
-    description: 'System fails to send email notifications to users',
-    severity: 'High',
-    status: 'Open',
-    stepsToReproduce: '1. Create new bug\n2. Check email notifications',
-    reportedBy: '2',
-    reporterName: 'John User',
-    assignedTo: '1',
-    assignedToName: 'Admin User',
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-10'),
-    comments: [
-      {
-        id: '7',
-        bugId: '6',
-        userId: '2',
-        userName: 'John User',
-        text: 'Missing important bug notifications!',
-        createdAt: new Date('2024-01-10')
-      }
-    ],
-    attachments: []
-  }
-];
-
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'Mobile App',
-    description: 'iOS and Android application',
-    createdBy: '1',
-    createdAt: new Date('2024-01-01')
-  },
-  {
-    id: '2',
-    name: 'Web Platform',
-    description: 'Main web application',
-    createdBy: '1',
-    createdAt: new Date('2024-01-15')
-  }
-];
+import { getUserProfile, getAssignedBugs, getUserProjects } from '../../services/api';
 
 // Type for the filter state
 type FilterValue = BugStatus | 'all';
@@ -195,26 +13,65 @@ type FilterValue = BugStatus | 'all';
 const UserDashboard: React.FC = () => {
   const [filter, setFilter] = useState<FilterValue>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [bugs, setBugs] = useState<Bug[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Get current user from Redux store
   const currentUser = useSelector((state: RootState) => state.auth.user);
 
-  // Use a mock user ID for demonstration since auth state doesn't include id
-  const currentUserId = '1';
-
   // Fallback user data for cases where user is not authenticated
   const defaultUser = {
     role: 'Admin',
     email: 'admin@bugtrack.com',
+    username: 'Admin User',
     isVerified: true
   };
 
   const activeUser = currentUser || defaultUser;
 
-  const bugs = mockBugs;
-  const projects = mockProjects;
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get user profile to get the user ID
+        const profileResponse = await getUserProfile();
+        const profile = profileResponse.user;
+        setUserProfile(profile);
+
+        // Use the user ID from profile to fetch bugs and projects
+        const userId = profile.UserID || profile.id;
+
+        // Fetch assigned bugs and projects in parallel
+        const [bugsResponse, projectsResponse] = await Promise.all([
+          getAssignedBugs(userId),
+          getUserProjects(userId)
+        ]);
+
+        setBugs(bugsResponse.bugs || []);
+        setProjects(projectsResponse.projects || []);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentUser) {
+      fetchDashboardData();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   // Filter bugs based on selected filter
   const filteredBugs = bugs.filter(bug => {
@@ -223,10 +80,11 @@ const UserDashboard: React.FC = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const myBugsCount = bugs.filter(b => b.assignedTo === currentUserId).length;
-  const openBugs = bugs.filter(b => b.status === 'Open' && b.assignedTo === currentUserId).length;
-  const inProgressBugs = bugs.filter(b => b.status === 'In Progress' && b.assignedTo === currentUserId).length;
-  const resolvedBugs = bugs.filter(b => b.status === 'Resolved' && b.assignedTo === currentUserId).length;
+  // Calculate statistics from fetched bug data
+  const myBugsCount = bugs.length;
+  const openBugs = bugs.filter(b => b.status === 'Open').length;
+  const inProgressBugs = bugs.filter(b => b.status === 'In Progress').length;
+  const resolvedBugs = bugs.filter(b => b.status === 'Resolved').length;
 
   const getSeverityColor = (severity: BugSeverity): string => {
     const colors: Record<BugSeverity, string> = {
@@ -264,6 +122,39 @@ const UserDashboard: React.FC = () => {
     });
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -271,13 +162,13 @@ const UserDashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center space-x-4">
             <div className="w-14 h-14 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              {activeUser.email?.substring(0, 2).toUpperCase() || 'AU'}
+              {(userProfile?.Username || activeUser.username || activeUser.email || 'U').substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {activeUser.email?.split('@')[0] || 'User'}!</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Welcome back, {userProfile?.Username || activeUser.username || 'User'}!</h1>
               <p className="text-gray-600 flex items-center mt-1">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                {activeUser.role || 'User'} • {activeUser.email || 'user@bugtrack.com'}
+                {userProfile?.Role || activeUser.role || 'User'} • {userProfile?.Username || activeUser.username || activeUser.email || 'user@bugtrack.com'}
               </p>
             </div>
           </div>
@@ -362,7 +253,7 @@ const UserDashboard: React.FC = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Active Projects</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {projects.map(project => {
-              const projectBugs = bugs.filter(b => b.projectId === project.id && b.assignedTo === currentUserId);
+              const projectBugs = bugs.filter(b => b.projectId === project.id);
               return (
                 <div key={project.id} className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer">
                   <div className="flex items-center space-x-3 mb-3">

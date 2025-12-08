@@ -243,6 +243,7 @@ interface AuthState {
   user: {
     role: string;
     email?: string;
+    username?: string;
     isVerified?: boolean;
   } | null;
   message: string;

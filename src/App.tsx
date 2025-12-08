@@ -11,7 +11,7 @@ import { Footer } from './components/Footer/footer';
 import RoleBasedDashboard from './components/Dashboards/RoleBasedDashboard';
 import UserDashboard from './components/Dashboards/UserDashboard';
 import AdminDashboard from './components/Dashboards/AdminDashboard';
-import { initializeAuth, loadFromCache } from './store/authSlice';
+import { initializeAuth } from './store/authSlice';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -79,19 +79,19 @@ function App() {
     },
     {
       path: '/userdashboard',
-      element: (
-        <ProtectedRoute>
-          <RoleBasedDashboard />
-        </ProtectedRoute>
-      )
+      element: <UserDashboard/> //(
+        //<ProtectedRoute>
+        //  <RoleBasedDashboard />
+        //</ProtectedRoute>
+      //)
     },
     {
       path: '/adminpage',
-      element: (
-        <ProtectedRoute>
-          <RoleBasedDashboard />
-        </ProtectedRoute>
-      )
+      element: <AdminDashboard/> //(
+       // <ProtectedRoute>
+       //   <RoleBasedDashboard />
+        //</ProtectedRoute>
+      //)
     },
   ]);
 

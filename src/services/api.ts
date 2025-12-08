@@ -149,11 +149,201 @@ export const verifyEmail = async (payload: { email: string; code: string }) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  
+
   const data = await response.json();
   if (!response.ok) {
     throw new Error(data.message || 'Verification failed');
   }
-  
+
+  return data;
+};
+
+// GET /bugs/assignee/:userId - Get bugs assigned to user
+export const getAssignedBugs = async (userId: string) => {
+  const response = await fetch(`${API_BASE}/bugs/assignee/${userId}`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch assigned bugs');
+  }
+
+  return data;
+};
+
+// GET /projects/member/:userId - Get projects user is member of
+export const getUserProjects = async (userId: string) => {
+  const response = await fetch(`${API_BASE}/projects/member/${userId}`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch user projects');
+  }
+
+  return data;
+};
+
+// GET /bugs - Get all bugs (admin only)
+export const getAllBugs = async () => {
+  const response = await fetch(`${API_BASE}/bugs`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch all bugs');
+  }
+
+  return data;
+};
+
+// GET /projects - Get all projects (admin only)
+export const getAllProjects = async () => {
+  const response = await fetch(`${API_BASE}/projects`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch all projects');
+  }
+
+  return data;
+};
+
+// POST /projects - Create new project (admin only)
+export const createProject = async (projectData: { name: string; description: string }) => {
+  const response = await fetch(`${API_BASE}/projects`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(projectData),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to create project');
+  }
+
+  return data;
+};
+
+// PUT /users/:userId/role - Update user role (admin only)
+export const updateUserRole = async (userId: string, role: string) => {
+  const response = await fetch(`${API_BASE}/users/${userId}/role`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ role }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to update user role');
+  }
+
+  return data;
+};
+
+// DELETE /users/:id - Delete user (admin only)
+export const deleteUserAdmin = async (userId: string) => {
+  const response = await fetch(`${API_BASE}/users/${userId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete user');
+  }
+
+  return data;
+};
+
+// DELETE /projects/:id - Delete project (admin only)
+export const deleteProject = async (projectId: string) => {
+  const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete project');
+  }
+
+  return data;
+};
+
+// DELETE /bugs/:id - Delete bug (admin only)
+export const deleteBug = async (bugId: string) => {
+  const response = await fetch(`${API_BASE}/bugs/${bugId}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to delete bug');
+  }
+
+  return data;
+};
+
+// Admin endpoints
+// GET /admin/users - All users
+export const getAdminUsers = async () => {
+  const response = await fetch(`${API_BASE}/users`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch admin users');
+  }
+
+  return data;
+};
+
+// GET /admin/projects - All projects
+export const getAdminProjects = async () => {
+  const response = await fetch(`${API_BASE}/projects`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch admin projects');
+  }
+
+  return data;
+};
+
+// GET /admin/bugs - All bugs with comment counts
+export const getAdminBugs = async () => {
+  const response = await fetch(`${API_BASE}/bugs`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch admin bugs');
+  }
+
+  return data;
+};
+
+// GET /admin/dashboard - Formatted dashboard data
+export const getAdminDashboard = async () => {
+  const response = await fetch(`${API_BASE}/api/admin/dashboard`, {
+    headers: getAuthHeaders()
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to fetch admin dashboard data');
+  }
+
   return data;
 };
