@@ -307,8 +307,8 @@ const AdminDashboard = () => {
           <div className="bg-linear-to-br from-indigo-500 to-indigo-600 rounded-2xl shadow-xl shadow-indigo-200 p-6 text-white">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Reports</h2>
-                <p className="text-indigo-100">Generate comprehensive bug reports and analytics</p>
+                <h2 className="text-2xl font-bold mb-2">All Bugs</h2>
+                <p className="text-indigo-100">View and manage all bugs</p>
               </div>
               <FileText className="w-12 h-12 text-indigo-200" />
             </div>
