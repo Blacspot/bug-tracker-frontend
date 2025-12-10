@@ -12,7 +12,7 @@ const getAuthHeaders = () => {
 
 // GET /users - Get all users (admin only)
 export const getAllUsers = async () => {
-  const response = await fetch(`${API_BASE}/users`, {
+  const response = await fetch(`${API_BASE}/api/admin/users`, {
     headers: getAuthHeaders()
   });
   
@@ -26,7 +26,7 @@ export const getAllUsers = async () => {
 
 // POST /users/register - Create a new user
 export const registerUser = async (credentials: { username: string; email: string; password: string }) => {
-  const response = await fetch(`${API_BASE}/users/register`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
@@ -42,7 +42,7 @@ export const registerUser = async (credentials: { username: string; email: strin
 
 // POST /users/login - Login user
 export const loginUser = async (credentials: { email: string; password: string }) => {
-  const response = await fetch(`${API_BASE}/users/login`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
@@ -97,7 +97,7 @@ export const updateUserProfile = async (profileData: { username?: string; email?
 
 // PUT /users/change-password - Change password
 export const changeUserPassword = async (passwordData: { currentPassword: string; newPassword: string }) => {
-  const response = await fetch(`${API_BASE}/users/change-password`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/change-password`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify(passwordData),
@@ -113,7 +113,7 @@ export const changeUserPassword = async (passwordData: { currentPassword: string
 
 // DELETE /users/:id - Delete user (admin only)
 export const deleteUser = async (userId: string) => {
-  const response = await fetch(`${API_BASE}/users/${userId}`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
@@ -128,7 +128,7 @@ export const deleteUser = async (userId: string) => {
 
 // POST /users/resend-verification - Resend verification email
 export const resendVerificationEmail = async (payload: { email: string }) => {
-  const response = await fetch(`${API_BASE}/users/resend-verification`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/resend-verification`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -144,7 +144,7 @@ export const resendVerificationEmail = async (payload: { email: string }) => {
 
 // POST /users/verify-email - Verify email
 export const verifyEmail = async (payload: { email: string; code: string }) => {
-  const response = await fetch(`${API_BASE}/users/verify-email`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/verify-email`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -216,7 +216,7 @@ export const getAllProjects = async () => {
 
 // POST /projects - Create new project (admin only)
 export const createProject = async (projectData: { name: string; description: string }) => {
-  const response = await fetch(`${API_BASE}/projects`, {
+  const response = await fetch(`${API_BASE}/api/admin/projects`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(projectData),
@@ -232,7 +232,7 @@ export const createProject = async (projectData: { name: string; description: st
 
 // PUT /users/:userId/role - Update user role (admin only)
 export const updateUserRole = async (userId: string, role: string) => {
-  const response = await fetch(`${API_BASE}/users/${userId}/role`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/${userId}/role`, {
     method: 'PUT',
     headers: getAuthHeaders(),
     body: JSON.stringify({ role }),
@@ -248,7 +248,7 @@ export const updateUserRole = async (userId: string, role: string) => {
 
 // DELETE /users/:id - Delete user (admin only)
 export const deleteUserAdmin = async (userId: string) => {
-  const response = await fetch(`${API_BASE}/users/${userId}`, {
+  const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
@@ -263,7 +263,7 @@ export const deleteUserAdmin = async (userId: string) => {
 
 // DELETE /projects/:id - Delete project (admin only)
 export const deleteProject = async (projectId: string) => {
-  const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+  const response = await fetch(`${API_BASE}/api/admin/projects/${projectId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
@@ -278,7 +278,7 @@ export const deleteProject = async (projectId: string) => {
 
 // DELETE /bugs/:id - Delete bug (admin only)
 export const deleteBug = async (bugId: string) => {
-  const response = await fetch(`${API_BASE}/bugs/${bugId}`, {
+  const response = await fetch(`${API_BASE}/api/admin/bugs/${bugId}`, {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
@@ -294,7 +294,7 @@ export const deleteBug = async (bugId: string) => {
 // Admin endpoints
 // GET /admin/users - All users
 export const getAdminUsers = async () => {
-  const response = await fetch(`${API_BASE}/users`, {
+  const response = await fetch(`${API_BASE}/api/admin/users`, {
     headers: getAuthHeaders()
   });
 
@@ -308,7 +308,7 @@ export const getAdminUsers = async () => {
 
 // GET /admin/projects - All projects
 export const getAdminProjects = async () => {
-  const response = await fetch(`${API_BASE}/projects`, {
+  const response = await fetch(`${API_BASE}/api/admin/projects`, {
     headers: getAuthHeaders()
   });
 
@@ -322,7 +322,7 @@ export const getAdminProjects = async () => {
 
 // GET /admin/bugs - All bugs with comment counts
 export const getAdminBugs = async () => {
-  const response = await fetch(`${API_BASE}/bugs`, {
+  const response = await fetch(`${API_BASE}/api/admin/bugs`, {
     headers: getAuthHeaders()
   });
 

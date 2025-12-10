@@ -83,9 +83,11 @@ const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
       <Navbar />
        <div className="flex justify-center items-center min-h-screen bg-base-200 ">
                 <div className="w-full max-w-lg p-8 rounded-xl shadow-lg bg-white">
-                    <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                      <input type="email"
+                    <h1 className="text-3xl font-bold mb-6 text-center" data-test="bug-login-header">Login</h1>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-test="bug-login-form">
+                      <input
+                      data-test="bug-login-email" 
+                      type="email"
                       {...register("email")}
                       placeholder="Email"
                       className="input border border-gray-300 rounded w-full p-2 text-lg"
@@ -96,6 +98,7 @@ const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
                         )}
 
                         <input
+                            data-test="bug-login-password"
                             type="password"
                             {...register("password")}
                             placeholder="Password"
@@ -106,7 +109,7 @@ const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
                             <span className="text-sm text-red-700">{errors.password.message}</span>
                         )}
 
-                         <button type="submit" className="btn btn-primary w-full mt-4" disabled={isLoading}>
+                         <button data-test="bug-login-submit" type="submit" className="btn btn-primary w-full mt-4" disabled={isLoading}>
                             {
                                 isLoading ? (
                                     <>
