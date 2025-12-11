@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { logout } from '../../store/authSlice';
 import { getUserProfile, getAssignedBugs, getUserProjects } from '../../services/api';
+import { Modal } from '../common/Modal';
 
 // Type for the filter state
 type FilterValue = BugStatus | 'all';
@@ -18,11 +19,23 @@ const UserDashboard: React.FC = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedBugForComments, setSelectedBugForComments] = useState<Bug | null>(null);
+  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
+  const [newComment, setNewComment] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Get current user from Redux store
   const currentUser = useSelector((state: RootState) => state.auth.user);
+
+  const [isReportBugModalOpen, setIsReportBugModalOpen] = useState(false);
+   const [newBug, setNewBug] = useState({ 
+     title: '', 
+     description: '', 
+     projectId: '', 
+     severity: 'Medium' as BugSeverity,
+     status: 'Open' as BugStatus 
+   });
 
   // Fallback user data for cases where user is not authenticated
   const defaultUser = {
@@ -95,6 +108,62 @@ const UserDashboard: React.FC = () => {
     };
     return colors[severity] || colors.Medium;
   };
+  const handleCreateBug = async () => {
+     if (newBug.title.trim() && newBug.projectId) {
+       try {
+         // TODO: Implement createBug API call
+         const newBugObj = {
+           id: Date.now().toString(),
+           projectId: newBug.projectId,
+           title: newBug.title,
+           description: newBug.description,
+           severity: newBug.severity,
+           status: newBug.status,
+           stepsToReproduce: '',
+           reportedBy: userProfile?.UserID || userProfile?.id || 'user',
+           reporterName: userProfile?.Username || activeUser.username,
+           assignedTo: userProfile?.UserID || userProfile?.id,
+           assignedToName: userProfile?.Username || activeUser.username,
+           createdAt: new Date(),
+           updatedAt: new Date(),
+           comments: [],
+           attachments: []
+         };
+         setBugs([newBugObj, ...bugs]);
+         setNewBug({ title: '', description: '', projectId: '', severity: 'Medium', status: 'Open' });
+         setIsReportBugModalOpen(false);
+       } catch (err) {
+         alert('Failed to create bug: ' + (err instanceof Error ? err.message : 'An error occurred'));
+       }
+     }
+   };
+
+  const handleAddComment = async () => {
+     if (newComment.trim() && selectedBugForComments) {
+       try {
+         // TODO: Implement createComment API call
+         const newCommentObj = {
+           id: Date.now().toString(),
+           bugId: selectedBugForComments.id,
+           userId: userProfile?.UserID || userProfile?.id,
+           userName: userProfile?.Username || activeUser.username,
+           text: newComment.trim(),
+           createdAt: new Date()
+         };
+
+         // Update the bug's comments locally
+         setBugs(bugs.map(bug =>
+           bug.id === selectedBugForComments.id
+             ? { ...bug, comments: [...(bug.comments || []), newCommentObj] }
+             : bug
+         ));
+
+         setNewComment('');
+       } catch (err) {
+         alert('Failed to add comment: ' + (err instanceof Error ? err.message : 'An error occurred'));
+       }
+     }
+   };
 
   const getStatusColor = (status: BugStatus): string => {
     const colors: Record<BugStatus, string> = {
@@ -277,7 +346,7 @@ const UserDashboard: React.FC = () => {
               <h2 className="text-xl font-bold text-gray-900">My Assigned Bugs</h2>
               <p className="text-sm text-gray-500 mt-1">Track and manage your bug assignments</p>
             </div>
-            <button className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
+            <button onClick={() => setIsReportBugModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
               <Plus className="w-4 h-4" />
               <span className="font-medium">Report Bug</span>
             </button>
@@ -344,7 +413,16 @@ const UserDashboard: React.FC = () => {
                     </span>
                     <span className="flex items-center">
                       <MessageSquare className="w-4 h-4 mr-1" />
-                      {bug.comments.length} comments
+                     <button 
+                        onClick={() => {
+                          setSelectedBugForComments(bug);
+                          setIsCommentsDialogOpen(true);
+                        }}
+                        className="flex items-center hover:text-indigo-600 transition-colors"
+                      >
+                        <MessageSquare className="w-4 h-4 mr-1" />
+                        {bug.comments?.length || 0} comments
+                      </button>                   
                     </span>
                     <span className="flex items-center">
                       <User className="w-4 h-4 mr-1" />
@@ -368,6 +446,138 @@ const UserDashboard: React.FC = () => {
           )}
         </div>
       </div>
+      <Modal isOpen={isReportBugModalOpen} onClose={() => setIsReportBugModalOpen(false)} title="Report New Bug">
+     <div className="space-y-4">
+       <div>
+         <label className="block text-sm font-medium text-gray-700 mb-2">Bug Title *</label>
+         <input
+           type="text"
+           value={newBug.title}
+           onChange={(e) => setNewBug({ ...newBug, title: e.target.value })}
+           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+           placeholder="Enter bug title"
+         />
+       </div>
+       <div>
+         <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
+         <select
+           value={newBug.projectId}
+           onChange={(e) => setNewBug({ ...newBug, projectId: e.target.value })}
+           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+         >
+           <option value="">Select a project</option>
+           {projects.map(project => (
+             <option key={project.id} value={project.id}>{project.name}</option>
+           ))}
+         </select>
+       </div>
+       <div>
+         <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+         <textarea
+           value={newBug.description}
+           onChange={(e) => setNewBug({ ...newBug, description: e.target.value })}
+           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+           rows={4}
+           placeholder="Describe the bug..."
+         />
+       </div>
+       <div className="grid grid-cols-2 gap-4">
+         <div>
+           <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+           <select
+             value={newBug.severity}
+             onChange={(e) => setNewBug({ ...newBug, severity: e.target.value as BugSeverity })}
+             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+           >
+             <option value="Low">Low</option>
+             <option value="Medium">Medium</option>
+             <option value="High">High</option>
+             <option value="Critical">Critical</option>
+           </select>
+         </div>
+         <div>
+           <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+           <select
+             value={newBug.status}
+             onChange={(e) => setNewBug({ ...newBug, status: e.target.value as BugStatus })}
+             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+           >
+             <option value="Open">Open</option>
+             <option value="In Progress">In Progress</option>
+             <option value="Resolved">Resolved</option>
+             <option value="Closed">Closed</option>
+           </select>
+         </div>
+       </div>
+       <div className="flex justify-end space-x-3 pt-4">
+         <button onClick={() => setIsReportBugModalOpen(false)} className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50">
+           Cancel
+         </button>
+         <button onClick={handleCreateBug} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">
+           Report Bug
+         </button>
+       </div>
+     </div>
+   </Modal>
+   <Modal 
+     isOpen={isCommentsDialogOpen} 
+     onClose={() => {
+       setIsCommentsDialogOpen(false);
+       setSelectedBugForComments(null);
+       setNewComment('');
+     }} 
+     title={`Comments - ${selectedBugForComments?.title || ''}`}
+   >
+     <div className="space-y-4">
+       {/* Existing Comments */}
+       <div className="space-y-3 max-h-96 overflow-y-auto">
+         {selectedBugForComments?.comments && selectedBugForComments.comments.length > 0 ? (
+           selectedBugForComments.comments.map((comment) => (
+             <div key={comment.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+               <div className="flex items-start space-x-3">
+                 <MessageSquare className="w-5 h-5 text-gray-400 mt-0.5" />
+                 <div className="flex-1">
+                   <p className="text-sm text-gray-700">{comment.text}</p>
+                   <p className="text-xs text-gray-500 mt-1">
+                     {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
+                   </p>
+                 </div>
+               </div>
+             </div>
+           ))
+         ) : (
+           <p className="text-center text-gray-500 py-8">No comments yet. Be the first to comment!</p>
+         )}
+       </div>
+       
+       {/* Add New Comment */}
+       <div className="border-t pt-4">
+         <label className="block text-sm font-medium text-gray-700 mb-2">Add Comment</label>
+         <textarea
+           value={newComment}
+           onChange={(e) => setNewComment(e.target.value)}
+           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+           rows={3}
+           placeholder="Write your comment..."
+         />
+         <div className="flex justify-end space-x-3 mt-3">
+           <button 
+             onClick={() => setIsCommentsDialogOpen(false)} 
+             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50"
+           >
+             Close
+           </button>
+           <button 
+             onClick={handleAddComment} 
+             className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+             disabled={!newComment.trim()}
+           >
+             Add Comment
+           </button>
+         </div>
+       </div>
+     </div>
+   </Modal>
     </div>
   );
 };

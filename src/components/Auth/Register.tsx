@@ -76,9 +76,11 @@ export const Register = () => {
 
             <div className="flex justify-center items-center min-h-screen bg-base-200 ">
                 <div className="w-full max-w-lg p-8 rounded-xl shadow-lg bg-white">
-                    <h1 className="text-3xl font-bold mb-6 text-center">Account Registration</h1>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <h1 className="text-3xl font-bold mb-6 text-center" data-test="bug-registration-header">Account Registration</h1>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-test="bug-registration-form">
+
                         <input
+                        data-test="bug-username"
                             type="text"
                             {...register("username")}
                             placeholder="Username"
@@ -88,6 +90,7 @@ export const Register = () => {
                             <span className="text-red-700 text-sm">{errors.username.message}</span>
                         )}
                         <input
+                        data-test="bug-email"
                             type="email"
                             {...register("email")}
                             placeholder="Email"
@@ -97,6 +100,7 @@ export const Register = () => {
                             <span className="text-red-700 text-sm">{errors.email.message}</span>
                         )}
                         <input
+                        data-test="bug-password"
                             type="password"
                             {...register("password")}
                             placeholder="Password"
@@ -107,6 +111,7 @@ export const Register = () => {
                         )}
 
                         <input
+                        data-test="bug-confirm-password"
                             type="password"
                             {...register('confirmPassword')}
                             placeholder="Confirm Password"
@@ -116,7 +121,7 @@ export const Register = () => {
                             <span className=" text-red-700 text-sm">{errors.confirmPassword.message}</span>
                         )}
 
-                        <button type="submit" className="btn btn-primary w-full mt-4" disabled={isLoading}>
+                        <button data-test="bug-register-submit" type="submit" className="btn btn-primary w-full mt-4" disabled={isLoading}>
                             {isLoading ? (
                                 <>
                                     <span className="loading loading-spinner text-primary" /> Please Wait....

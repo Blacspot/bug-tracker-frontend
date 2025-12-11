@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 import type { RootState } from '../../store';
-import { getAdminUsers, getAdminProjects, getAdminBugs, getAdminDashboard, createProject, updateUserRole, deleteUserAdmin, deleteProject, deleteBug } from '../../services/api';
+import { getAdminUsers, getAdminProjects, getAdminBugs, getAdminDashboard, createProject, updateUserRole, deleteUserAdmin, deleteProject, deleteBug, getUserProfile } from '../../services/api';
 import type { User, Project, Bug } from '../types';
 
 const AdminDashboard = () => {
@@ -37,21 +37,75 @@ const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [selectedBugForComments, setSelectedBugForComments] = useState<Bug | null>(null);
+  const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
+  const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [usersData, projectsData, bugsData, dashboardData] = await Promise.all([
+        const [usersData, projectsData, bugsData, dashboardData, profileData] = await Promise.all([
           getAdminUsers(),
           getAdminProjects(),
           getAdminBugs(),
-          getAdminDashboard()
+          getAdminDashboard(),
+          getUserProfile()
         ]);
-        setUsers(Array.isArray(usersData) ? usersData : []);
-        setProjects(Array.isArray(projectsData) ? projectsData : []);
-        setBugs(Array.isArray(bugsData) ? bugsData : []);
+        // Transform bugs data to match expected interface
+        const transformedBugs = Array.isArray(bugsData) ? bugsData.map(bug => ({
+          id: String(bug.BugID),
+          projectId: bug.ProjectID ? String(bug.ProjectID) : '',
+          title: bug.Title,
+          description: bug.Description,
+          severity: bug.Priority as 'Critical' | 'High' | 'Medium' | 'Low',
+          status: bug.Status as 'Open' | 'In Progress' | 'Resolved' | 'Closed',
+          stepsToReproduce: bug.StepsToReproduce || '',
+          reportedBy: bug.ReportedBy ? String(bug.ReportedBy) : '',
+          reporterName: bug.ReporterName || '',
+          assignedTo: bug.AssignedTo ? String(bug.AssignedTo) : undefined,
+          assignedToName: bug.AssignedToName || undefined,
+          createdAt: bug.CreatedAt ? new Date(bug.CreatedAt) : new Date(),
+          updatedAt: bug.UpdatedAt ? new Date(bug.UpdatedAt) : new Date(),
+          comments: bug.Comments || [],
+          attachments: bug.Attachments || []
+        })) : [];
+
+        // Transform projects data to match expected interface
+        const transformedProjects = Array.isArray(projectsData) ? projectsData.map(project => ({
+          id: String(project.id),
+          name: project.name,
+          description: project.description || '',
+          createdBy: project.createdBy || '',
+          createdAt: project.createdAt ? new Date(project.createdAt) : new Date()
+        })) : [];
+
+        // Transform users data to match expected interface
+        const transformedUsers = Array.isArray(usersData) ? usersData.map(user => ({
+          id: String(user.id),
+          name: user.name,
+          email: user.email || `${user.name}@example.com`, // Provide default email if missing
+          role: (user.role === 'admin' ? 'Admin' : 'User') as 'Admin' | 'User'
+        })) : [];
+
+        setUsers(transformedUsers);
+        setProjects(transformedProjects);
+        setBugs(transformedBugs);
         setDashboardData(dashboardData || null);
+        setUserProfile(profileData);
+
+        // Log all fetched backend data for debugging
+        console.log('AdminDashboard fetched data:', {
+          rawUsers: Array.isArray(usersData) ? usersData : [],
+          rawProjects: Array.isArray(projectsData) ? projectsData : [],
+          rawBugs: Array.isArray(bugsData) ? bugsData : [],
+          transformedUsers,
+          transformedProjects,
+          transformedBugs,
+          dashboard: dashboardData || null,
+          profile: profileData
+        });
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
         setError(errorMessage);
@@ -114,6 +168,33 @@ const AdminDashboard = () => {
       }
     }
   };
+
+  const handleAddComment = async () => {
+     if (newComment.trim() && selectedBugForComments) {
+       try {
+         // TODO: Implement createComment API call
+         const newCommentObj = {
+           id: Date.now().toString(),
+           bugId: selectedBugForComments.id,
+           userId: userProfile?.UserID || userProfile?.id,
+           userName: userProfile?.Username || activeUser.username,
+           text: newComment.trim(),
+           createdAt: new Date()
+         };
+
+         // Update the bug's comments locally
+         setBugs(bugs.map(bug =>
+           bug.id === selectedBugForComments.id
+             ? { ...bug, comments: [...(bug.comments || []), newCommentObj] }
+             : bug
+         ));
+
+         setNewComment('');
+       } catch (err) {
+         alert('Failed to add comment: ' + (err instanceof Error ? err.message : 'An error occurred'));
+       }
+     }
+   };
 
   const handleToggleUserRole = async (userId: string) => {
     try {
@@ -424,7 +505,16 @@ const AdminDashboard = () => {
                       </span>
                       <span className="flex items-center">
                         <FileText className="w-4 h-4 mr-1" />
-                        {bug.comments?.length || 0} comments
+                        <button 
+                           onClick={() => {
+                             setSelectedBugForComments(bug);
+                             setIsCommentsDialogOpen(true);
+                           }}
+                           className="flex items-center hover:text-indigo-600 transition-colors"
+   >
+                           <MessageSquare className="w-4 h-4 mr-1" />
+                           {bug.comments?.length || 0} comments
+                         </button>
                       </span>
                       <span>{bug.createdAt ? new Date(bug.createdAt).toLocaleDateString() : 'Unknown'}</span>
                     </div>
@@ -628,6 +718,65 @@ const AdminDashboard = () => {
           ))}
         </div>
       </Modal>
+      <Modal 
+     isOpen={isCommentsDialogOpen} 
+     onClose={() => {
+       setIsCommentsDialogOpen(false);
+       setSelectedBugForComments(null);
+       setNewComment('');
+     }} 
+     title={`Comments - ${selectedBugForComments?.title || ''}`}
+   >
+     <div className="space-y-4">
+       {/* Existing Comments */}
+       <div className="space-y-3 max-h-96 overflow-y-auto">
+         {selectedBugForComments?.comments && selectedBugForComments.comments.length > 0 ? (
+           selectedBugForComments.comments.map((comment) => (
+             <div key={comment.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+               <div className="flex items-start space-x-3">
+                 <MessageSquare className="w-5 h-5 text-gray-400 mt-0.5" />
+                 <div className="flex-1">
+                   <p className="text-sm text-gray-700">{comment.text}</p>
+                   <p className="text-xs text-gray-500 mt-1">
+                     {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
+                   </p>
+                 </div>
+               </div>
+             </div>
+           ))
+         ) : (
+           <p className="text-center text-gray-500 py-8">No comments yet. Be the first to comment!</p>
+         )}
+       </div>
+       
+       {/* Add New Comment */}
+       <div className="border-t pt-4">
+         <label className="block text-sm font-medium text-gray-700 mb-2">Add Comment</label>
+         <textarea
+           value={newComment}
+           onChange={(e) => setNewComment(e.target.value)}
+           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
+           rows={3}
+           placeholder="Write your comment..."
+         />
+         <div className="flex justify-end space-x-3 mt-3">
+           <button 
+             onClick={() => setIsCommentsDialogOpen(false)} 
+             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50"
+           >
+             Close
+           </button>
+           <button 
+             onClick={handleAddComment} 
+             className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+             disabled={!newComment.trim()}
+           >
+             Add Comment
+           </button>
+         </div>
+       </div>
+     </div>
+   </Modal>
     </div>
   );
 };
