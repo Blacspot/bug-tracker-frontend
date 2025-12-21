@@ -1,18 +1,18 @@
 export type UserRole = 'Admin' | 'User';
 
 export interface User {
-  id: string;
+  id: string;  // Accept both
   name: string;
-  email: string;
-  role: UserRole;
+  email?: string;  // Make optional
+  role: string;  // Accept any string, normalize in display
 }
 
 export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  createdBy: string;
-  createdAt: Date;
+  ProjectID: number;
+  ProjectName: string;
+  Description: string;
+  CreatedBy: number;
+  CreatedAt: string;
 }
 
 export type BugStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';

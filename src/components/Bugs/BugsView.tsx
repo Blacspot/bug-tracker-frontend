@@ -69,7 +69,7 @@ export const BugsView: React.FC<BugsViewProps> = ({
           >
             <option value="all">All Projects</option>
             {projects.map(project => (
-              <option key={project.id} value={project.id}>{project.name}</option>
+              <option key={project.ProjectID} value={project.ProjectID}>{project.ProjectName}</option>
             ))}
           </select>
           <select

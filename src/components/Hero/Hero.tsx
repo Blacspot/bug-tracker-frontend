@@ -6,7 +6,7 @@ const Herom = () => {
   return (
     <div className='hero'>
        <div className='hero-text'>
-         <h1> Streamline Software with Smart Bug Tracking </h1>
+         <h1 data-test="hero-title"> Streamline Software with Smart Bug Tracking </h1>
            <p>
               Report, track, and resolve software defects efficiently in a collaborative workspace
     

@@ -9,7 +9,7 @@ describe("registration  tests", () => {
         cy.getDataTest('bug-registration-header').contains("Account Registration")
 
         // Mock the signup API call with a successful response
-        cy.intercept('POST', '/users', {
+        cy.intercept('POST', 'https://bug-tracker2-main.onrender.com/users/register', {
             statusCode: 201,
             body: {
                 message: 'Registration successful! Logging you in...',
@@ -18,7 +18,7 @@ describe("registration  tests", () => {
                     email:"obwogs@gmail.com",
                     password: "12345678",
                     role: "admin"
-                    
+
                 }
             }
         }).as('signup')
@@ -51,7 +51,9 @@ describe("registration  tests", () => {
             .should('contain.text', 'Register')
             .should('not.be.disabled')
             .click()
-            .pause()
+
+        // Wait for the API call to complete
+        cy.wait('@signup')
 
     })
 

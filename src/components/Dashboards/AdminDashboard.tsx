@@ -1,5 +1,5 @@
 import { Plus, Users, TrendingUp, FileText, LogOut, Activity, CheckCircle, AlertCircle, Clock, X, Edit, Trash2, MessageSquare } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '../../store';
@@ -32,6 +32,14 @@ const AdminDashboard = () => {
   const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', description: '' });
   const [projects, setProjects] = useState<Project[]>([]);
+
+  const handleProjectNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewProject(prev => ({ ...prev, name: e.target.value }));
+  }, []);
+
+  const handleProjectDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewProject(prev => ({ ...prev, description: e.target.value }));
+  }, []);
   const [users, setUsers] = useState<User[]>([]);
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -41,6 +49,22 @@ const AdminDashboard = () => {
   const [selectedBugForComments, setSelectedBugForComments] = useState<Bug | null>(null);
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [isAssignUserModalOpen, setIsAssignUserModalOpen] = useState(false);
+  const [assignmentData, setAssignmentData] = useState({
+    projectId: '',
+    userId: ''
+  });
+
+  const handleAssignmentProjectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  setAssignmentData(prev => ({ ...prev, projectId: e.target.value }));
+   }, []);
+  const handleAssignmentUserChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+  setAssignmentData(prev => ({ ...prev, userId: e.target.value }));
+}, []);
+
+  const handleNewCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewComment(e.target.value);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,22 +98,26 @@ const AdminDashboard = () => {
 
         // Transform projects data to match expected interface
         const transformedProjects = Array.isArray(projectsData) ? projectsData.map(project => ({
-          id: String(project.id),
-          name: project.name,
-          description: project.description || '',
-          createdBy: project.createdBy || '',
-          createdAt: project.createdAt ? new Date(project.createdAt) : new Date()
+          ProjectID: project.ProjectID,
+          ProjectName: project.ProjectName,
+          Description: project.Description || '',
+          CreatedBy: project.CreatedBy || 0,
+          CreatedAt: project.CreatedAt || new Date().toISOString()
         })) : [];
 
         // Transform users data to match expected interface
         const transformedUsers = Array.isArray(usersData) ? usersData.map(user => ({
-          id: String(user.id),
-          name: user.name,
-          email: user.email || `${user.name}@example.com`, // Provide default email if missing
-          role: (user.role === 'admin' ? 'Admin' : 'User') as 'Admin' | 'User'
-        })) : [];
-
-        setUsers(transformedUsers);
+           id: String(user.id),
+           name: user.name,
+           email: user.email || `${user.name}@example.com`,
+           role: (user.role?.toLowerCase() === 'admin' ? 'Admin' : 'User') as 'Admin' | 'User'
+             })) : [];         
+         
+        setUsers(Array.isArray(usersData) ? usersData.map(user => ({
+         ...user,
+         id: String(user.id),
+         email: user.email || `${user.name}@example.com`
+          })) : []);       
         setProjects(transformedProjects);
         setBugs(transformedBugs);
         setDashboardData(dashboardData || null);
@@ -229,7 +257,7 @@ const AdminDashboard = () => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
         await deleteProject(projectId);
-        setProjects(projects.filter(project => project.id !== projectId));
+        setProjects(projects.filter(project => String(project.ProjectID) !== projectId));
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'An error occurred';
         alert('Failed to delete project: ' + errorMessage);
@@ -253,8 +281,8 @@ const AdminDashboard = () => {
     if (!isOpen) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
             <button
@@ -479,10 +507,16 @@ const AdminDashboard = () => {
               <h2 className="text-xl font-bold text-gray-900">Recent Bugs</h2>
               <p className="text-sm text-gray-500 mt-1">Latest reported issues</p>
             </div>
-            <button onClick={() => setIsProjectModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
-              <Plus className="w-4 h-4" />
-              <span className="font-medium">Create Project</span>
-            </button>
+            <div className="flex items-center space-x-3">
+             <button onClick={() => setIsProjectModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-indigo-600 to-indigo-700 text-white rounded-xl hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg shadow-indigo-200 hover:shadow-xl">
+               <Plus className="w-4 h-4" />
+               <span className="font-medium">Create Project</span>
+             </button>
+             <button onClick={() => setIsAssignUserModalOpen(true)} className="flex items-center space-x-2 px-5 py-2.5 bg-linear-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all shadow-lg shadow-emerald-200 hover:shadow-xl">
+               <Users className="w-4 h-4" />
+               <span className="font-medium">Assign User</span>
+             </button>
+           </div>
           </div>
           <div className="space-y-3">
             {bugs.slice(0, 5).map(bug => (
@@ -501,7 +535,7 @@ const AdminDashboard = () => {
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
                       <span className="flex items-center">
                         <Activity className="w-4 h-4 mr-1" />
-                        {projects.find(p => p.id === bug.projectId)?.name}
+                        {projects.find(p => String(p.ProjectID) === bug.projectId)?.ProjectName}
                       </span>
                       <span className="flex items-center">
                         <FileText className="w-4 h-4 mr-1" />
@@ -537,7 +571,7 @@ const AdminDashboard = () => {
             <input
               type="text"
               value={newProject.name}
-              onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+              onChange={handleProjectNameChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="Enter project name"
             />
@@ -546,7 +580,7 @@ const AdminDashboard = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               value={newProject.description}
-              onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+              onChange={handleProjectDescriptionChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="Enter project description"
               rows={4}
@@ -569,6 +603,67 @@ const AdminDashboard = () => {
         </div>
       </Modal>
 
+      {/* Assign User to Project Modal */}
+<Modal isOpen={isAssignUserModalOpen} onClose={() => setIsAssignUserModalOpen(false)} title="Assign User to Project">
+  <div className="space-y-4">
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Select Project *</label>
+      <select
+        value={assignmentData.projectId}
+        onChange={(e) => setAssignmentData(prev => ({ ...prev, projectId: e.target.value }))}
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+      >
+        <option value="">Choose a project...</option>
+        {projects.map(project => (
+          <option key={project.ProjectID} value={project.ProjectID}>
+            {project.ProjectName}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">Select User *</label>
+      <select
+        value={assignmentData.userId}
+        onChange={(e) => setAssignmentData(prev => ({ ...prev, userId: e.target.value }))}
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+      >
+        <option value="">Choose a user...</option>
+        {users.map(user => (
+          <option key={user.id} value={user.id}>
+            {user.name}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="flex justify-end space-x-3 pt-4">
+      <button
+        onClick={() => {
+          setIsAssignUserModalOpen(false);
+          setAssignmentData({ projectId: '', userId: '' });
+        }}
+        className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={() => {
+          if (assignmentData.projectId && assignmentData.userId) {
+            console.log('Assign user:', assignmentData.userId, 'to project:', assignmentData.projectId);
+            alert(`User ${assignmentData.userId} assigned to Project ${assignmentData.projectId}`);
+            setAssignmentData({ projectId: '', userId: '' });
+            setIsAssignUserModalOpen(false);
+          }
+        }}
+        disabled={!assignmentData.projectId || !assignmentData.userId}
+        className="px-6 py-2.5 bg-linear-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Assign User
+      </button>
+    </div>
+  </div>
+</Modal>
+
       {/* Manage Users Modal */}
       <Modal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} title="Manage Users">
         <div className="overflow-x-auto">
@@ -586,17 +681,17 @@ const AdminDashboard = () => {
               {users.map(user => (
                 <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-4 font-medium text-gray-900">{user.name}</td>
-                  <td className="py-4 px-4 text-gray-600">{user.email}</td>
+                  <td className="py-4 px-4 text-gray-600">{user.email || `${user.name}@example.com`}</td>
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      user.role === 'Admin'
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {user.role}
-                    </span>
+                       user.role?.toLowerCase() === 'admin'
+                         ? 'bg-purple-100 text-purple-700'
+                         : 'bg-blue-100 text-blue-700'
+                     }`}>
+                     {user.role}
+                   </span>                     
                   </td>
-                  <td className="py-4 px-4 text-center">
+                      <td className="py-4 px-4 text-center">
                     <button
                       onClick={() => handleToggleUserRole(user.id)}
                       className="inline-flex items-center space-x-1 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors"
@@ -639,7 +734,7 @@ const AdminDashboard = () => {
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <span className="flex items-center">
                       <Activity className="w-4 h-4 mr-1" />
-                      {projects.find(p => p.id === bug.projectId)?.name}
+                      {projects.find(p => String(p.ProjectID) === bug.projectId)?.ProjectName}
                     </span>
                     <span className="flex items-center">
                       <FileText className="w-4 h-4 mr-1" />
@@ -670,18 +765,18 @@ const AdminDashboard = () => {
       <Modal isOpen={isProjectsModalOpen} onClose={() => setIsProjectsModalOpen(false)} title="All Projects">
         <div className="space-y-4">
           {projects.map(project => (
-            <div key={project.id} className="p-5 rounded-xl border border-gray-200 hover:shadow-md transition-all bg-white">
+            <div key={project.ProjectID} className="p-5 rounded-xl border border-gray-200 hover:shadow-md transition-all bg-white">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-gray-900 mb-2">{project.name}</h3>
-                  <p className="text-gray-600 text-sm">{project.description}</p>
+                  <h3 className="font-semibold text-lg text-gray-900 mb-2">{project.ProjectName}</h3>
+                  <p className="text-gray-600 text-sm">{project.Description}</p>
                   <div className="mt-3 flex items-center text-sm text-gray-500">
                     <Activity className="w-4 h-4 mr-1" />
-                    {bugs.filter(b => b.projectId === project.id).length} bugs
+                    {bugs.filter(b => b.projectId === String(project.ProjectID)).length} bugs
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDeleteProject(project.id)}
+                  onClick={() => handleDeleteProject(String(project.ProjectID))}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Delete Project"
                 >
@@ -754,7 +849,7 @@ const AdminDashboard = () => {
          <label className="block text-sm font-medium text-gray-700 mb-2">Add Comment</label>
          <textarea
            value={newComment}
-           onChange={(e) => setNewComment(e.target.value)}
+           onChange={handleNewCommentChange}
            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
            rows={3}
            placeholder="Write your comment..."

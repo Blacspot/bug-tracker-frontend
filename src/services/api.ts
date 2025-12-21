@@ -40,6 +40,8 @@ export const registerUser = async (credentials: { username: string; email: strin
   return data;
 };
 
+
+
 // POST /users/login - Login user
 export const loginUser = async (credentials: { email: string; password: string }) => {
   const response = await fetch(`${API_BASE}/api/admin/users/login`, {
@@ -186,6 +188,22 @@ export const getUserProjects = async (userId: string) => {
   return data;
 };
 
+// POST /bugs - Create a new bug
+export const createBug = async (bugData: { title: string; description: string; projectId: string; severity: string; status: string }) => {
+  const response = await fetch(`${API_BASE}/bugs`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(bugData),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to create bug');
+  }
+
+  return data;
+};
+
 // GET /bugs - Get all bugs (admin only)
 export const getAllBugs = async () => {
   const response = await fetch(`${API_BASE}/bugs`, {
@@ -214,9 +232,9 @@ export const getAllProjects = async () => {
   return data;
 };
 
-// POST /projects - Create new project (admin only)
+// POST /projects - Create new project
 export const createProject = async (projectData: { name: string; description: string }) => {
-  const response = await fetch(`${API_BASE}/api/admin/projects`, {
+  const response = await fetch(`${API_BASE}/projects`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(projectData),

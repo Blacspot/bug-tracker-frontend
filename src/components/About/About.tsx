@@ -6,7 +6,7 @@ export const About = () => {
       <div className="max-w-5xl mx-auto space-y-12">
         {/* Header */}
         <section className="text-center">
-          <h1 className="text-4xl font-bold text-blue-600 mb-4">
+          <h1 className="text-4xl font-bold text-blue-600 mb-4" data-test="about bug">
             About Us
           </h1>
           <p className="text-lg text-gray-600">

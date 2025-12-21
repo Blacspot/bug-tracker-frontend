@@ -1,15 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, LogOut, CheckCircle, Clock, AlertCircle, Filter, Search, User, Briefcase, TrendingUp, MessageSquare } from 'lucide-react';
 import type { Bug, Project, BugStatus, BugSeverity } from '../types';
 import type { RootState } from '../../store';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { logout } from '../../store/authSlice';
-import { getUserProfile, getAssignedBugs, getUserProjects } from '../../services/api';
+import { getUserProfile, getAssignedBugs, getUserProjects, createBug } from '../../services/api';
 import { Modal } from '../common/Modal';
 
 // Type for the filter state
 type FilterValue = BugStatus | 'all';
+
+// Type for raw project data from API
+interface RawProject {
+  ProjectID?: number;
+  id?: string;
+  ProjectName?: string;
+  name?: string;
+  Description?: string;
+  description?: string;
+  CreatedBy?: number;
+  createdBy?: string;
+  CreatedAt?: string;
+  createdAt?: string;
+}
 
 const UserDashboard: React.FC = () => {
   const [filter, setFilter] = useState<FilterValue>('all');
@@ -22,6 +36,8 @@ const UserDashboard: React.FC = () => {
   const [selectedBugForComments, setSelectedBugForComments] = useState<Bug | null>(null);
   const [isCommentsDialogOpen, setIsCommentsDialogOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -29,13 +45,38 @@ const UserDashboard: React.FC = () => {
   const currentUser = useSelector((state: RootState) => state.auth.user);
 
   const [isReportBugModalOpen, setIsReportBugModalOpen] = useState(false);
-   const [newBug, setNewBug] = useState({ 
-     title: '', 
-     description: '', 
-     projectId: '', 
+   const [newBug, setNewBug] = useState({
+     title: '',
+     description: '',
+     projectId: '',
      severity: 'Medium' as BugSeverity,
-     status: 'Open' as BugStatus 
+     status: 'Open' as BugStatus
    });
+
+   const handleBugTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+     setNewBug(prev => ({ ...prev, title: e.target.value }));
+   }, []);
+
+   const handleViewProject = (project: Project) => {
+     setSelectedProject(project);
+     setIsProjectModalOpen(true);
+   };
+
+   const handleBugDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+     setNewBug(prev => ({ ...prev, description: e.target.value }));
+   }, []);
+
+   const handleBugProjectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+     setNewBug(prev => ({ ...prev, projectId: e.target.value }));
+   }, []);
+
+   const handleBugSeverityChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+     setNewBug(prev => ({ ...prev, severity: e.target.value as BugSeverity }));
+   }, []);
+
+   const handleBugStatusChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+     setNewBug(prev => ({ ...prev, status: e.target.value as BugStatus }));
+   }, []);
 
   // Fallback user data for cases where user is not authenticated
   const defaultUser = {
@@ -57,6 +98,7 @@ const UserDashboard: React.FC = () => {
         // Get user profile to get the user ID
         const profileResponse = await getUserProfile();
         const profile = profileResponse.user;
+        console.log('User profile data:', profile);
         setUserProfile(profile);
 
         // Use the user ID from profile to fetch bugs and projects
@@ -68,8 +110,39 @@ const UserDashboard: React.FC = () => {
           getUserProjects(userId)
         ]);
 
-        setBugs(bugsResponse.bugs || []);
-        setProjects(projectsResponse.projects || []);
+        console.log('Assigned bugs data:', bugsResponse.bugs);
+        console.log('User projects data:', projectsResponse.projects);
+
+        // Transform bugs data to match expected interface
+        const transformedBugs = Array.isArray(bugsResponse.bugs) ? bugsResponse.bugs.map((bug: any) => ({
+          id: String(bug.BugID || bug.id),
+          projectId: String(bug.ProjectID || bug.projectId || ''),
+          title: bug.Title || bug.title,
+          description: bug.Description || bug.description,
+          severity: (bug.Priority || bug.severity) as 'Critical' | 'High' | 'Medium' | 'Low',
+          status: (bug.Status || bug.status) as 'Open' | 'In Progress' | 'Resolved' | 'Closed',
+          stepsToReproduce: bug.StepsToReproduce || bug.stepsToReproduce || '',
+          reportedBy: String(bug.ReportedBy || bug.reportedBy || ''),
+          reporterName: bug.ReporterName || bug.reporterName || '',
+          assignedTo: bug.AssignedTo ? String(bug.AssignedTo) : bug.assignedTo,
+          assignedToName: bug.AssignedToName || bug.assignedToName,
+          createdAt: bug.CreatedAt ? new Date(bug.CreatedAt) : bug.createdAt ? new Date(bug.createdAt) : new Date(),
+          updatedAt: bug.UpdatedAt ? new Date(bug.UpdatedAt) : bug.updatedAt ? new Date(bug.updatedAt) : new Date(),
+          comments: bug.Comments || bug.comments || [],
+          attachments: bug.Attachments || bug.attachments || []
+        })) : [];
+
+        // Transform projects data to match expected interface
+        const transformedProjects = Array.isArray(projectsResponse.projects) ? projectsResponse.projects.map((project: RawProject) => ({
+          ProjectID: project.ProjectID || project.id,
+          ProjectName: project.ProjectName || project.name,
+          Description: project.Description || project.description || '',
+          CreatedBy: project.CreatedBy || project.createdBy,
+          CreatedAt: project.CreatedAt || project.createdAt
+        })) : [];
+
+        setBugs(transformedBugs);
+        setProjects(transformedProjects);
 
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -85,6 +158,16 @@ const UserDashboard: React.FC = () => {
       setLoading(false);
     }
   }, [currentUser]);
+
+  // Log filter changes
+  useEffect(() => {
+    console.log('Dashboard filter changed to:', filter);
+  }, [filter]);
+
+  // Log search term changes
+  useEffect(() => {
+    console.log('Dashboard search term:', searchTerm);
+  }, [searchTerm]);
 
   // Filter bugs based on selected filter
   const filteredBugs = bugs.filter(bug => {
@@ -111,25 +194,36 @@ const UserDashboard: React.FC = () => {
   const handleCreateBug = async () => {
      if (newBug.title.trim() && newBug.projectId) {
        try {
-         // TODO: Implement createBug API call
-         const newBugObj = {
-           id: Date.now().toString(),
-           projectId: newBug.projectId,
+         const bugData = {
            title: newBug.title,
            description: newBug.description,
+           projectId: newBug.projectId,
            severity: newBug.severity,
-           status: newBug.status,
-           stepsToReproduce: '',
-           reportedBy: userProfile?.UserID || userProfile?.id || 'user',
-           reporterName: userProfile?.Username || activeUser.username,
-           assignedTo: userProfile?.UserID || userProfile?.id,
-           assignedToName: userProfile?.Username || activeUser.username,
-           createdAt: new Date(),
-           updatedAt: new Date(),
-           comments: [],
-           attachments: []
+           status: newBug.status
          };
-         setBugs([newBugObj, ...bugs]);
+         const response = await createBug(bugData);
+         console.log('New bug created:', response.bug);
+
+         // Transform the created bug to match expected interface
+         const transformedBug = {
+           id: String(response.bug.BugID || response.bug.id),
+           projectId: String(response.bug.ProjectID || response.bug.projectId || ''),
+           title: response.bug.Title || response.bug.title,
+           description: response.bug.Description || response.bug.description,
+           severity: (response.bug.Priority || response.bug.severity) as 'Critical' | 'High' | 'Medium' | 'Low',
+           status: (response.bug.Status || response.bug.status) as 'Open' | 'In Progress' | 'Resolved' | 'Closed',
+           stepsToReproduce: response.bug.StepsToReproduce || response.bug.stepsToReproduce || '',
+           reportedBy: String(response.bug.ReportedBy || response.bug.reportedBy || ''),
+           reporterName: response.bug.ReporterName || response.bug.reporterName || '',
+           assignedTo: response.bug.AssignedTo ? String(response.bug.AssignedTo) : response.bug.assignedTo,
+           assignedToName: response.bug.AssignedToName || response.bug.assignedToName,
+           createdAt: response.bug.CreatedAt ? new Date(response.bug.CreatedAt) : response.bug.createdAt ? new Date(response.bug.createdAt) : new Date(),
+           updatedAt: response.bug.UpdatedAt ? new Date(response.bug.UpdatedAt) : response.bug.updatedAt ? new Date(response.bug.updatedAt) : new Date(),
+           comments: response.bug.Comments || response.bug.comments || [],
+           attachments: response.bug.Attachments || response.bug.attachments || []
+         };
+
+         setBugs([transformedBug, ...bugs]);
          setNewBug({ title: '', description: '', projectId: '', severity: 'Medium', status: 'Open' });
          setIsReportBugModalOpen(false);
        } catch (err) {
@@ -321,18 +415,26 @@ const UserDashboard: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Active Projects</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {projects.map(project => {
-              const projectBugs = bugs.filter(b => b.projectId === project.id);
+            {projects.map((project: Project) => {
+              const projectBugs = bugs.filter((b: Bug) => b.projectId === String(project.ProjectID));
               return (
-                <div key={project.id} className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer">
+                <div key={project.ProjectID} className="p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer">
                   <div className="flex items-center space-x-3 mb-3">
-                    <div className={`w-3 h-3 rounded-full ${getProjectColor(project.id)}`}></div>
-                    <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                    <div className={`w-3 h-3 rounded-full ${getProjectColor(project.ProjectID.toString())}`}></div>
+                    <h3 className="font-semibold text-gray-900">{project.ProjectName}</h3>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">{projectBugs.length} bugs assigned</span>
-                    <span className="text-indigo-600 font-medium">View →</span>
-                  </div>
+                <span className="text-gray-600">{projectBugs.length} bugs assigned</span>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewProject(project);
+                  }}
+                  className="text-indigo-600 font-medium hover:text-indigo-700 transition-colors"
+                >
+                  View →
+                </button>
+              </div>
                 </div>
               );
             })}
@@ -409,7 +511,7 @@ const UserDashboard: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     <span className="flex items-center">
                       <Briefcase className="w-4 h-4 mr-1" />
-                      {projects.find(p => p.id === bug.projectId)?.name || 'Unknown Project'}
+                      {projects.find(p => String(p.ProjectID) === bug.projectId)?.ProjectName || 'Unknown Project'}
                     </span>
                     <span className="flex items-center">
                       <MessageSquare className="w-4 h-4 mr-1" />
@@ -453,7 +555,7 @@ const UserDashboard: React.FC = () => {
          <input
            type="text"
            value={newBug.title}
-           onChange={(e) => setNewBug({ ...newBug, title: e.target.value })}
+           onChange={handleBugTitleChange}
            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
            placeholder="Enter bug title"
          />
@@ -462,12 +564,12 @@ const UserDashboard: React.FC = () => {
          <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
          <select
            value={newBug.projectId}
-           onChange={(e) => setNewBug({ ...newBug, projectId: e.target.value })}
+           onChange={handleBugProjectChange}
            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
          >
            <option value="">Select a project</option>
            {projects.map(project => (
-             <option key={project.id} value={project.id}>{project.name}</option>
+             <option key={project.ProjectID} value={project.ProjectID}>{project.ProjectName}</option>
            ))}
          </select>
        </div>
@@ -475,7 +577,7 @@ const UserDashboard: React.FC = () => {
          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
          <textarea
            value={newBug.description}
-           onChange={(e) => setNewBug({ ...newBug, description: e.target.value })}
+           onChange={handleBugDescriptionChange}
            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
            rows={4}
            placeholder="Describe the bug..."
@@ -486,7 +588,7 @@ const UserDashboard: React.FC = () => {
            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
            <select
              value={newBug.severity}
-             onChange={(e) => setNewBug({ ...newBug, severity: e.target.value as BugSeverity })}
+             onChange={handleBugSeverityChange}
              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
            >
              <option value="Low">Low</option>
@@ -499,7 +601,7 @@ const UserDashboard: React.FC = () => {
            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
            <select
              value={newBug.status}
-             onChange={(e) => setNewBug({ ...newBug, status: e.target.value as BugStatus })}
+             onChange={handleBugStatusChange}
              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500"
            >
              <option value="Open">Open</option>
@@ -578,6 +680,43 @@ const UserDashboard: React.FC = () => {
        </div>
      </div>
    </Modal>
+   <Modal 
+  isOpen={isProjectModalOpen} 
+  onClose={() => {
+    setIsProjectModalOpen(false);
+    setSelectedProject(null);
+  }} 
+  title="Project Details"
+>
+  {selectedProject && (
+    <div className="space-y-4">
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-500 mb-1">Project Name</label>
+        <p className="text-lg font-semibold text-gray-900">{selectedProject.ProjectName}</p>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-500 mb-1">Description</label>
+        <p className="text-gray-700">{selectedProject.Description || 'No description provided'}</p>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-500 mb-1">Created At</label>
+        <p className="text-gray-900">
+          {selectedProject.CreatedAt ? new Date(selectedProject.CreatedAt).toLocaleString() : 'N/A'}
+        </p>
+      </div>
+      <div className="flex justify-end pt-4 border-t">
+        <button 
+          onClick={() => setIsProjectModalOpen(false)} 
+          className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )}
+</Modal>
     </div>
   );
 };

@@ -74,8 +74,8 @@ export const NewBugModal: React.FC<NewBugModalProps> = ({
             >
               <option value="">Select a project</option>
               {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
+                <option key={project.ProjectID} value={project.ProjectID}>
+                  {project.ProjectName}
                 </option>
               ))}
             </select>

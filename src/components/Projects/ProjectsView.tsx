@@ -34,20 +34,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map(project => {
-            const projectBugs = bugs.filter(b => b.projectId === project.id);
+            const projectBugs = bugs.filter(b => b.projectId === project.ProjectID.toString());
             return (
               <div
-                key={project.id}
+                key={project.ProjectID}
                 className="p-6 border-2 border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
               >
-                <h3 className="text-lg text-gray-900 mb-2">{project.name}</h3>
-                <p className="text-sm text-gray-600 mb-4">{project.description}</p>
+                <h3 className="text-lg text-gray-900 mb-2">{project.ProjectName}</h3>
+                <p className="text-sm text-gray-600 mb-4">{project.Description}</p>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500">
                     {projectBugs.length} {projectBugs.length === 1 ? 'bug' : 'bugs'}
                   </span>
                   <button
-                    onClick={() => onViewProjectBugs(project.id)}
+                    onClick={() => onViewProjectBugs(project.ProjectID.toString())}
                     className="text-indigo-600 hover:text-indigo-700"
                   >
                     View Bugs →
