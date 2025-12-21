@@ -34,7 +34,7 @@ export const BugCard: React.FC<BugCardProps> = ({ bug, projects, onClick }) => {
           <div className="flex items-center space-x-4 text-xs text-gray-500">
             <span>Reporter: {bug.reporterName}</span>
             {bug.assignedToName && <span>Assigned: {bug.assignedToName}</span>}
-            <span>{projects.find(p => p.id === bug.projectId)?.name}</span>
+            <span>{projects.find(p => p.ProjectID.toString() === bug.projectId)?.ProjectName}</span>
             {bug.comments.length > 0 && (
               <span className="flex items-center space-x-1">
                 <MessageSquare className="w-3 h-3" />

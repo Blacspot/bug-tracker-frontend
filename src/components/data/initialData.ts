@@ -9,18 +9,18 @@ export const initialUsers: User[] = [
 
 export const initialProjects: Project[] = [
   {
-    id: '1',
-    name: 'E-Commerce Platform',
-    description: 'Main shopping website',
-    createdBy: '1',
-    createdAt: new Date('2024-01-01')
+    ProjectID: 1,
+    ProjectName: 'E-Commerce Platform',
+    Description: 'Main shopping website',
+    CreatedBy: 1,
+    CreatedAt: '2024-01-01'
   },
   {
-    id: '2',
-    name: 'Mobile App',
-    description: 'iOS and Android application',
-    createdBy: '1',
-    createdAt: new Date('2024-01-15')
+    ProjectID: 2,
+    ProjectName: 'Mobile App',
+    Description: 'iOS and Android application',
+    CreatedBy: 1,
+    CreatedAt: '2024-01-15'
   }
 ];
 

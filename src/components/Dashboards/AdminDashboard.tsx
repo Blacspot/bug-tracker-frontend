@@ -55,12 +55,6 @@ const AdminDashboard = () => {
     userId: ''
   });
 
-  const handleAssignmentProjectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-  setAssignmentData(prev => ({ ...prev, projectId: e.target.value }));
-   }, []);
-  const handleAssignmentUserChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-  setAssignmentData(prev => ({ ...prev, userId: e.target.value }));
-}, []);
 
   const handleNewCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewComment(e.target.value);

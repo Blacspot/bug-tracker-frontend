@@ -65,7 +65,7 @@ export const BugDetailModal: React.FC<BugDetailModalProps> = ({
             <div>
               <p className="text-gray-600">Project</p>
               <p className="text-gray-900">
-                {projects.find(p => p.id === bug.projectId)?.name}
+                {projects.find(p => p.ProjectID.toString() === bug.projectId)?.ProjectName}
               </p>
             </div>
             <div>
