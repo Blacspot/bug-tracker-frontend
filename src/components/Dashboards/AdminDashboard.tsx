@@ -17,6 +17,7 @@ const AdminDashboard = () => {
 
   // Fallback user data for cases where user is not authenticated
   const defaultUser = {
+    id: '0',
     role: 'Admin',
     email: 'admin@bugtrack.com',
     username: 'Admin User',
@@ -33,13 +34,13 @@ const AdminDashboard = () => {
   const [newProject, setNewProject] = useState({ name: '', description: '' });
   const [projects, setProjects] = useState<Project[]>([]);
 
-  const handleProjectNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewProject(prev => ({ ...prev, name: e.target.value }));
-  }, []);
+  };
 
-  const handleProjectDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleProjectDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewProject(prev => ({ ...prev, description: e.target.value }));
-  }, []);
+  };
   const [users, setUsers] = useState<User[]>([]);
   const [bugs, setBugs] = useState<Bug[]>([]);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -179,7 +180,7 @@ const AdminDashboard = () => {
   const handleCreateProject = async () => {
     if (newProject.name.trim()) {
       try {
-        const project = await createProject(newProject);
+        const project = await createProject({ ...newProject, createdBy: String(activeUser.id || userProfile?.UserID || 1) });
         setProjects([...projects, project]);
         setNewProject({ name: '', description: '' });
         setIsProjectModalOpen(false);
@@ -567,6 +568,7 @@ const AdminDashboard = () => {
               onChange={handleProjectNameChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               placeholder="Enter project name"
+              autoFocus
             />
           </div>
           <div>

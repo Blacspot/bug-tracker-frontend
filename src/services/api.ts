@@ -233,11 +233,15 @@ export const getAllProjects = async () => {
 };
 
 // POST /projects - Create new project
-export const createProject = async (projectData: { name: string; description: string }) => {
+export const createProject = async (projectData: { name: string; description: string; createdBy: string }) => {
   const response = await fetch(`${API_BASE}/projects`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify(projectData),
+    body: JSON.stringify({
+      ProjectName: projectData.name,
+      Description: projectData.description,
+      CreatedBy: parseInt(projectData.createdBy)
+    }),
   });
 
   const data = await response.json();

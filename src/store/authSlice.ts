@@ -255,6 +255,7 @@ const initializeAuth = createAsyncThunk(
 interface AuthState {
   isAuthenticated: boolean;
   user: {
+    id: string;
     role: string;
     email?: string;
     username?: string;
@@ -280,7 +281,7 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    loginSuccess: (state, action: PayloadAction<{ message: string; user: { role: string }; token: string }>) => {
+    loginSuccess: (state, action: PayloadAction<{ message: string; user: { id: string; role: string; email?: string; username?: string; isVerified?: boolean }; token: string }>) => {
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
