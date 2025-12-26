@@ -100,18 +100,12 @@ const AdminDashboard = () => {
         })) : [];
 
         // Transform users data to match expected interface
-        const transformedUsers = Array.isArray(usersData) ? usersData.map(user => ({
-           id: String(user.id),
-           name: user.name,
-           email: user.email || `${user.name}@example.com`,
-           role: (user.role?.toLowerCase() === 'admin' ? 'Admin' : 'User') as 'Admin' | 'User'
-             })) : [];         
-         
         setUsers(Array.isArray(usersData) ? usersData.map(user => ({
-         ...user,
-         id: String(user.id),
-         email: user.email || `${user.name}@example.com`
-          })) : []);       
+          id: String(user.UserID),
+          name: user.Username,
+          email: user.Email,
+          role: (user.Role?.toLowerCase() === 'admin' ? 'Admin' : 'User') as 'Admin' | 'User'
+        })) : []);
         setProjects(transformedProjects);
         setBugs(transformedBugs);
         setDashboardData(dashboardData || null);
@@ -122,7 +116,12 @@ const AdminDashboard = () => {
           rawUsers: Array.isArray(usersData) ? usersData : [],
           rawProjects: Array.isArray(projectsData) ? projectsData : [],
           rawBugs: Array.isArray(bugsData) ? bugsData : [],
-          transformedUsers,
+          transformedUsers: Array.isArray(usersData) ? usersData.map(user => ({
+            id: String(user.UserID),
+            name: user.Username,
+            email: user.Email,
+            role: (user.Role?.toLowerCase() === 'admin' ? 'Admin' : 'User') as 'Admin' | 'User'
+          })) : [],
           transformedProjects,
           transformedBugs,
           dashboard: dashboardData || null,
