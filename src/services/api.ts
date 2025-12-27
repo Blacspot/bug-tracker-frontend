@@ -193,7 +193,13 @@ export const createBug = async (bugData: { title: string; description: string; p
   const response = await fetch(`${API_BASE}/bugs`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify(bugData),
+    body: JSON.stringify({
+      Title: bugData.title,
+      ProjectID: parseInt(bugData.projectId),
+      Description: bugData.description,
+      Status: bugData.status,
+      Priority: bugData.severity
+    }),
   });
 
   const data = await response.json();
